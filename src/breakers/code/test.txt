@@ -1,0 +1,5 @@
+#variaveis
+int a = 123;
+int x=1;
+float y=3.14;
+bool z=true; # iniciadas explicitamente
