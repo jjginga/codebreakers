@@ -2,16 +2,37 @@ package breakers.code;
 
 import breakers.code.grammar.tokens.BASIC_SYMBOLS;
 import breakers.code.grammar.tokens.BASIC_VAR;
+import breakers.code.grammar.tokens.KeyValueToken;
 import breakers.code.grammar.tokens.Token;
 
 import java.util.*;
 
 public class Parser {
+    // This variable stores what is being read until it finds a meaningful string that represents a token --> e.g: "int"
+
+    // currentRead -> "int"
     private String currentRead = "";
     private String fullString;
-    //JOEL - isto é uma especie de "arvore"? Com uma operação na Linked Hash Map de cada nó?
-    //IMO devia ser uma linked list porque queremos aceder ao ultimo elemento
-    private LinkedList<Map<Token, String>> stringTokenMapList;
+
+    private List<KeyValueToken> tokenMapListLine;
+    private List<List<KeyValueToken>> lines;
+
+    // TODO -> Change logic to first create the list of tokens and then validate if they are sintatically correct
+
+    // Each line ends with ";"
+    // [
+    //  [] -> Line 1
+    //  [] -> line 2
+    // ]
+
+
+    // E.g: int a=12; bool b =a==3; intc = 1+2;
+    // [
+    //  [(BASIC_VAR, "int"), (BASIC_SYMBOL, " "), ("VAR_NAME", "a"), ("BASIC_SYMBOL", "="), ("NUMBER", "12"), ("BASIC_SYMBOL", ";")] -> Line 1
+    //  [(BASIC_VAR, "bool"), (BASIC_SYMBOL, " "), ("VAR_NAME", "b"), ("BASIC_SYMBOL", "="), ("VAR_NAME", "a"), ("BASIC_SYMBOL", "=="), ("NUMBER", "3"), ("BASIC_SYMBOL", ";")] -> line 2
+    //  [(BASIC_VAR, "int"), ("VAR_NAME", "c"), (BASIC_SYMBOL, " "), ("BASIC_SYMBOL", "="), (BASIC_SYMBOL, " "), ("NUMBER", "1"), ("BASIC_SYMBOL", "+"), ("NUMBER", "2"), ("BASIC_SYMBOL", ";")] -> line 3 --> INVALID due to no spaces in between "int" and "c"
+    // ]
+
 
     private Integer index = 0;
 
@@ -124,7 +145,6 @@ public class Parser {
 
     private String getNumberAfterEquals(String str) {
         String numeric = "";
-
         //There are several cases that can end a number (space, ;, +, -, *, /, =, <, >, ), ])
         //We need to find the first one and get the number
         //we cannot use regex because we need the index
@@ -137,7 +157,7 @@ public class Parser {
 
             index = index + firstIndex;
         } else {
-            throw new RuntimeException("Syntax error");
+            throw new SyntaxErrorException("Syntax error");
         }
 
         return numeric;
@@ -159,10 +179,9 @@ public class Parser {
             variableName = variableName.trim();
             //starts with a letter and can contain letters, numbers and underscores
             if(!variableName.matches("[a-zA-Z][a-zA-Z0-9_]*"))
-                throw new RuntimeException("Invalid variable name");
-
+                throw new SyntaxErrorException("Invalid variable name");
         } else {
-            throw new RuntimeException("Syntax error");
+            throw new SyntaxErrorException("Syntax error");
         }
 
         return variableName;

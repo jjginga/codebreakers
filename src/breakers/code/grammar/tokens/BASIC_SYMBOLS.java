@@ -21,6 +21,7 @@ public enum BASIC_SYMBOLS {
     COMMA(","),
     COLON(":"),
     LESS_THAN("<"),
+    SPACE(" "),
     GREATER_THAN(">");
 
 
