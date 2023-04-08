@@ -3,7 +3,7 @@ package breakers.code.grammar.tokens;
 
 import java.util.stream.Stream;
 
-public enum BASIC_SYMBOLS {
+public enum BASIC_SYMBOLS implements BASIC_GRAMMAR{
 
     COMMENT("#"),
     PLUS("+"),

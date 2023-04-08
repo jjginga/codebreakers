@@ -2,7 +2,7 @@ package breakers.code.grammar.tokens;
 
 import java.util.stream.Stream;
 
-public enum BASIC_VAR {
+public enum BASIC_VAR implements BASIC_GRAMMAR {
 
     INT("int"),
     FLOAT("float"),

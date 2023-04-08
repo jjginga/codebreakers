@@ -7,4 +7,5 @@ public enum Token {
     BASIC_SYMBOL,
     VARIABLE,
     NUMERIC
+
 }

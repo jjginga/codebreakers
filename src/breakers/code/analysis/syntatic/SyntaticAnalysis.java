@@ -1,8 +1,10 @@
 package breakers.code.analysis.syntatic;
 
+import breakers.code.grammar.tokens.KeyValueToken;
 import breakers.code.grammar.tokens.Token;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public class SyntaticAnalysis {
@@ -16,7 +18,10 @@ public class SyntaticAnalysis {
 
         // Go back until finds something that is not number or variable
 
-
+        //y=x+z; -> válido
+        //y=x+; -> invalido
+        //2+3-> valido
+        //2+
         return false;
     }
 
@@ -29,15 +34,26 @@ public class SyntaticAnalysis {
     /*
     * param -> line containing tokens: e.g: [(BASIC_VAR, "int"), ("VAR_NAME", "a"), ("BASIC_SYMBOL", "="), ("NUMBER", "12"), ("BASIC_SYMBOL", ";")]
      * */
-    public boolean validateLogicParentheses() {
+    public boolean validateLogicParentheses(List<KeyValueToken> line) {
         return false;
     }
+
+
+    /*
+    * Validate if the var name is syntactically correct
+    * that is, starts with a lietter (upper or lower case) and contains only letters, numbers and underscores
+    * */
+    public boolean validateVariableName(KeyValueToken variableName) {
+        return false;
+    }
+
+
 
     public boolean validateLogicMathSymbols(){
         return false;
     }
 
-    public boolean validateLogicBrackets(){
+    public boolean validateGreaterThan(){
         return false;
     }
 
