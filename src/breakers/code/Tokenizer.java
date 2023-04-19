@@ -69,8 +69,6 @@ public class Tokenizer {
 
                 //the char is statment terminator or delimiter
                 if(!isToBeIgnored(currentChar)) {
-                    //TODO: before creating token we should peek to see if it is composed like "==".
-
                     // composed delimiter like "==" --> We add the two chars as a single token and move the counter 2 indexes ahead
                     String composedString = getComposedString(currentChar, i);
                     if(isComposedDelimiter(composedString)){
