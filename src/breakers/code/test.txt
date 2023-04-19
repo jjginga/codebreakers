@@ -6,7 +6,7 @@ bool z=true; # iniciadas explicitamente
 
 #comparacao
 bool a = 1 == 2;
-
+int j = a+-2;
 structs { #início
  point2D {float x,y;}; # point2D é composta por 2 reais x e y
  point3D {float x,y,z;}; # point3D por 3 reais x, y e z

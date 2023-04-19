@@ -3,12 +3,18 @@ package breakers.code.analysis.syntatic;
 import breakers.code.grammar.tokens.KeyValueToken;
 import breakers.code.grammar.tokens.Token;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 public class SyntaticAnalysis {
-    public boolean validateSyntax () {
+    public boolean validateSyntax (List<List<KeyValueToken>> lines) {
+
+        for (List<KeyValueToken> line : lines) {
+            // validations will take place here
+        }
+
         return false;
     }
 
@@ -22,7 +28,42 @@ public class SyntaticAnalysis {
         //y=x+; -> invalido
         //2+3-> valido
         //2+
+
         return false;
+    }
+
+    /*
+    * This validation should be a part of the math expression validation
+    * */
+    public boolean validateNumberOrVariableBeforeAfterSymbol(List<KeyValueToken> line) {
+        // TODO -> use enum instead to enumerate the math symbols and have them in the grammar
+        List<String> mathSymbols = new ArrayList<>(List.of("+", "-", "/", "*"));
+
+        List<Integer> positions = findPositionsOfMathSymbols(mathSymbols, line);
+
+        if(positions.size() > 0) {
+            positions.stream().forEach(index -> {
+                String tokenBeforeSymbol = line.get(index - 1).getValue();
+                String tokenAfterSymbol = line.get(index + 1).getValue();
+
+                // TODO -> check if it's variable or number before or after the symbol
+            });
+        }
+        return false;
+    }
+
+    private List<Integer> findPositionsOfMathSymbols (
+            List<String> mathSymbols,
+            List<KeyValueToken> line
+    ){
+        List<Integer> mathSymbolsPositions = new ArrayList<>();
+        for (String mathSymbol : mathSymbols) {
+            Integer index = line.indexOf(mathSymbol);
+
+            mathSymbolsPositions.add(index);
+        }
+
+        return mathSymbolsPositions;
     }
 
 
