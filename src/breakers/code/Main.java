@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         //String string = "int a = 123;";
 
-        String filePath = System.getProperty("user.dir") + "/src/breakers/code/" + "test.txt";
+        String filePath = System.getProperty("user.dir") + "/src/breakers/code/" + "factorial_1.yal";
         String string = new String(Files.readAllBytes(Path.of(filePath)));
 
         Tokenizer tokenizer = new Tokenizer(string);

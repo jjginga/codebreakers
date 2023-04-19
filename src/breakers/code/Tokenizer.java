@@ -19,9 +19,9 @@ public class Tokenizer {
     private List<List<KeyValueToken>> lines;
 
     //TODO:obtain delimiters and terminators from the grammar
-    private String delimiters = "+-*/=()[]{}<>";
-    private String statmentTerminator = ";";
-    private String commentDelimiter = "#";
+    private String delimiters = BASIC_DELIMITERS.values().toString();
+    private String statmentTerminator = STATEMENT_TERMINATOR.values().toString();
+    private String commentDelimiter = COMMENT_DELIMITER.values().toString();
 
     private final List<String> composedDelimiters = Arrays.asList("==", "!=", ">=", "<=", "++", "--");
 
@@ -35,7 +35,6 @@ public class Tokenizer {
         this.lines = new ArrayList<List<KeyValueToken>>();
     }
 
-    //TODO: composed delimiters, like "==", "!=", ">=", "<=", "++", "--"
     public List<List<KeyValueToken>> tokenize() {
         //we process the text one char at a time
         for (int i = 0; i < sourceCode.length(); i++) {
@@ -61,11 +60,14 @@ public class Tokenizer {
                 KeyValueToken token;
 
                 //add the current value
-                //TODO: not preform this for empty current value
-                if(!currentValue.toString().isEmpty()) {
+                if(currentValue.toString().isEmpty())
+                    continue;
+                token = getKeyValueToken(null, currentValue.toString());
+                currentLine.add(token);
+                /*if(!currentValue.toString().isEmpty()) {
                     token = getKeyValueToken(null, currentValue.toString());
                     storeFoundToken(token);
-                }
+                }*/
 
                 //the char is statment terminator or delimiter
                 if(!isToBeIgnored(currentChar)) {
@@ -109,9 +111,13 @@ public class Tokenizer {
     }
 
 
+
     private static KeyValueToken getKeyValueToken(BASIC_GRAMMAR grammarKey, String currentValue) {
         return new KeyValueToken(grammarKey, currentValue); // @Joel --> Joel, why was this being set to null? We need to keep track of the types of token we have for later validations
         // For instance we cannot have 2 BASIC_VARs in a row like "int int", to validate that we need to know their types --> which will be the KEY on the KeyValueToken
+        //Gabriel --> I would split this in two clases. In the tokenizer I would just split the stream into tokens
+        //then in the parser I would analyze  assigning it a type (filling the null)
+        //I would do this, this way to avoid having the assignemt of type in both places, because some types need syntax analysis
     }
 
 
@@ -158,7 +164,8 @@ public class Tokenizer {
     private String getComposedString (char c, int currentIndex) {
         StringBuilder sb = new StringBuilder();
         sb.append(c);
-        sb.append(sourceCode.charAt(currentIndex + 1));
+        if(sourceCode.length() > currentIndex + 1)
+            sb.append(sourceCode.charAt(currentIndex + 1));
 
         String composedString = sb.toString();
 
