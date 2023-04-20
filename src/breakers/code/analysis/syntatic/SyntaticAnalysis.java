@@ -12,6 +12,18 @@ public class SyntaticAnalysis {
     public boolean validateSyntax (List<List<KeyValueToken>> lines) {
 
         for (List<KeyValueToken> line : lines) {
+            line.stream().forEach(keyValueToken -> {
+                if(keyValueToken.getKey().getType() == "BASIC_VAR"){
+                    //validateBasicVar()
+                }
+                if(keyValueToken.getKey().getType() == "PARENTHESES"){
+                    validateLogicParentheses()
+                }
+            });
+
+            //[ {BASIC_VAR, const }, {BRACKET, "{" }, {BASIC_VAR, "int"}], [{FUNC_TYPE, max}], [{NUMBER, 100}, {DELIMITER, ";"}, ]
+            // verify if the next token after a basic_var is null, if it is null, identify it has a VAR_NAME
+            // after verify if the name is correct
             // validations will take place here
         }
 
