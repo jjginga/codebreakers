@@ -22,4 +22,6 @@ public enum BASIC_VAR implements BASIC_GRAMMAR {
     public static Stream<BASIC_VAR> stream() {
         return Stream.of(BASIC_VAR.values());
     }
+
+    public static Stream<String> types() { return Stream.of(BASIC_VAR.values()).map(BASIC_VAR::getType);}
 }

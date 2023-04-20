@@ -22,4 +22,6 @@ public enum NAMES implements BASIC_GRAMMAR {
     public static Stream<NAMES> stream() {
         return Stream.of(NAMES.values());
     }
+
+    public static Stream<String> types() { return Stream.of(NAMES.values()).map(NAMES::getType);}
 }

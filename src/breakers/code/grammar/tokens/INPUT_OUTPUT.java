@@ -21,7 +21,9 @@ public enum INPUT_OUTPUT implements BASIC_GRAMMAR {
         return this.type;
     }
 
-    public static Stream<BASIC_VAR> stream() {
-        return Stream.of(BASIC_VAR.values());
+    public static Stream<INPUT_OUTPUT> stream() {
+        return Stream.of(INPUT_OUTPUT.values());
     }
+
+    public static Stream<String> types() { return Stream.of(INPUT_OUTPUT.values()).map(INPUT_OUTPUT::getType);}
 }

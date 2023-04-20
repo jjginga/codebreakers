@@ -3,7 +3,10 @@ package breakers.code.grammar.tokens;
 import java.util.stream.Stream;
 
 public enum COMPOSED_DELIMITER implements BASIC_GRAMMAR {
-    EQUALS_EQUALS("==");
+    EQUALS_EQUALS("=="),
+    EQUALS_NOT_EQUALS("!="),
+    LESS_THAN_OR_EQUALS("<="),
+    GREATER_THAN_OR_EQUALS(">="),;
 
     private String type;
 
@@ -16,7 +19,9 @@ public enum COMPOSED_DELIMITER implements BASIC_GRAMMAR {
         return this.type;
     }
 
-    public static Stream<BASIC_VAR> stream() {
-        return Stream.of(BASIC_VAR.values());
+    public static Stream<COMPOSED_DELIMITER> stream() {
+        return Stream.of(COMPOSED_DELIMITER.values());
     }
+
+    public static Stream<String> types() { return Stream.of(COMPOSED_DELIMITER.values()).map(COMPOSED_DELIMITER::getType);}
 }

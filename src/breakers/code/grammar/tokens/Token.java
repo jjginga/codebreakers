@@ -6,6 +6,6 @@ public enum Token {
     BASIC_TYPE,
     BASIC_SYMBOL,
     VARIABLE,
-    NUMERIC
-
+    NUMERIC,
+    STRING
 }

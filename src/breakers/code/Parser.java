@@ -31,12 +31,6 @@ public class Parser {
     }
 
     public List<List<KeyValueToken>> parse(List<List<KeyValueToken>> lines) {
-        System.out.println("teste");
-        for (List<KeyValueToken> line : lines) {
-            for (KeyValueToken keyValueToken : line) {
-                    System.out.println(keyValueToken.getValue());
-            }
-        }
         return null;
     }
 

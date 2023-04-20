@@ -20,7 +20,9 @@ public enum RESERVED_WORDS implements BASIC_GRAMMAR {
         return this.type;
     }
 
-    public static Stream<BASIC_VAR> stream() {
-        return Stream.of(BASIC_VAR.values());
+    public static Stream<RESERVED_WORDS> stream() {
+        return Stream.of(RESERVED_WORDS.values());
     }
+
+    public static Stream<String> types() { return Stream.of(RESERVED_WORDS.values()).map(RESERVED_WORDS::getType);}
 }

@@ -18,7 +18,9 @@ public enum GENERAL_SCHEMA implements BASIC_GRAMMAR {
         return this.type;
     }
 
-    public static Stream<BASIC_VAR> stream() {
-        return Stream.of(BASIC_VAR.values());
+    public static Stream<GENERAL_SCHEMA> stream() {
+        return Stream.of(GENERAL_SCHEMA.values());
     }
+
+    public static Stream<String> types() { return Stream.of(GENERAL_SCHEMA.values()).map(GENERAL_SCHEMA::getType);}
 }

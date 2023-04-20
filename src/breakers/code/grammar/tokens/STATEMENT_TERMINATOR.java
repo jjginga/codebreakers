@@ -22,4 +22,6 @@ public enum STATEMENT_TERMINATOR implements BASIC_GRAMMAR{
         return Stream.of(STATEMENT_TERMINATOR.values());
     }
 
+    public static Stream<String> types() { return Stream.of(STATEMENT_TERMINATOR.values()).map(STATEMENT_TERMINATOR::getType);}
+
 }

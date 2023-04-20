@@ -17,9 +17,6 @@ public enum BASIC_DELIMITERS implements BASIC_GRAMMAR {
     RBRACKET("]"),
     LANGLE("<"),
     RANGLE(">"),
-    //name for \"
-    DQUOTE("\""),
-    QUOTE("”"),
     COMMA(",");
 
 
@@ -34,7 +31,8 @@ public enum BASIC_DELIMITERS implements BASIC_GRAMMAR {
         return this.type;
     }
 
-    public static Stream<BASIC_VAR> stream() {
-        return Stream.of(BASIC_VAR.values());
+    public static Stream<BASIC_DELIMITERS> stream() {
+        return Stream.of(BASIC_DELIMITERS.values());
     }
+    public static Stream<String> types() { return Stream.of(BASIC_DELIMITERS.values()).map(BASIC_DELIMITERS::getType);}
 }

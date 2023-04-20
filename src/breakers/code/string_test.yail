@@ -1,0 +1,3 @@
+write(“introduza um número entre 0 e “,max);
+write(“Erro!!!”)
+write(n,”! = “,fact(n));

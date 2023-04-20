@@ -22,4 +22,6 @@ public enum COMMENT_DELIMITER implements BASIC_GRAMMAR{
         return Stream.of(COMMENT_DELIMITER.values());
     }
 
+    public static Stream<String> types() { return Stream.of(COMMENT_DELIMITER.values()).map(COMMENT_DELIMITER::getType);}
+
 }
