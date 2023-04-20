@@ -17,7 +17,7 @@ public class SyntaticAnalysis {
                     //validateBasicVar()
                 }
                 if(keyValueToken.getKey().getType() == "PARENTHESES"){
-                    validateLogicParentheses()
+                    //validateLogicParentheses();
                 }
             });
 
@@ -88,6 +88,19 @@ public class SyntaticAnalysis {
     * param -> line containing tokens: e.g: [(BASIC_VAR, "int"), ("VAR_NAME", "a"), ("BASIC_SYMBOL", "="), ("NUMBER", "12"), ("BASIC_SYMBOL", ";")]
      * */
     public boolean validateLogicParentheses(List<KeyValueToken> line) {
+        Stack<Character> stack = new Stack<>();
+        for (KeyValueToken token : line) {
+            if (token.getKey().equals("OPEN_PARENTHESIS")) {
+                stack.push('(');
+            } else if (token.getKey().equals("CLOSE_PARENTHESIS")) {
+                if (stack.isEmpty()) {
+                    return false;
+                }
+
+                stack.pop();
+
+            }
+        }
         return false;
     }
 
