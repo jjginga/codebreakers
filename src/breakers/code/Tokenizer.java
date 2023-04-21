@@ -1,12 +1,20 @@
 package breakers.code;
 
 import breakers.code.grammar.tokens.*;
+import breakers.code.grammar.tokens.lexems.*;
+import breakers.code.grammar.tokens.lexems.delimiters.COMPOSED_OPERATORS;
+import breakers.code.grammar.tokens.lexems.delimiters.OPERATORS;
+import breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS;
+import breakers.code.grammar.tokens.lexems.delimiters.PONCTUATION;
+import breakers.code.grammar.tokens.lexems.literals.STRING;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static breakers.code.grammar.tokens.STRING_DELIMITERS.TEXT;
+import static breakers.code.grammar.tokens.lexems.literals.STRING.TEXT;
 
 
 /*This class gets the source code and splits it into tokens
@@ -17,27 +25,30 @@ public class Tokenizer {
     /* The argument, a string with the source code */
     private final String sourceCode;
     /*The result - a list of lists with the tokens */
-    private List<List<KeyValueToken>> lines;
+    private List<List<Token>> lines;
 
-    private String delimiters = BASIC_DELIMITERS.types().collect(Collectors.joining());
-    private String statmentTerminator = STATEMENT_TERMINATOR.types().collect(Collectors.joining());
-    private String commentDelimiter = COMMENT_DELIMITER.types().collect(Collectors.joining());
-    private String stringDelimiter = STRING_DELIMITERS.types().collect(Collectors.joining());
+    private String delimiters = Stream.of(
+            OPERATORS.dataStream(),
+            PARENTHESIS.dataStream(),
+            PONCTUATION.dataStream()
+            ).flatMap(s->s).collect(Collectors.joining());
+    private String statmentTerminator = STATEMENT_TERMINATOR.dataStream().collect(Collectors.joining());
+    private String commentDelimiter = COMMENT_DELIMITER.dataStream().collect(Collectors.joining());
 
-    private final List<String> composedDelimiters = COMPOSED_DELIMITER.types().collect(Collectors.toList());
-    private TypeToKey typeToKey;
+    private final List<String> composedDelimiters = COMPOSED_OPERATORS.dataStream().collect(Collectors.toList());
+    private AssignType assignType;
 
     private StringBuilder currentValue = new StringBuilder();
-    private List<KeyValueToken> currentLine = new ArrayList<KeyValueToken>();
+    private List<Token> currentLine = new ArrayList<Token>();
 
     /* Constructor */
     public Tokenizer(String sourceCode) {
         this.sourceCode = sourceCode;
-        this.lines = new ArrayList<List<KeyValueToken>>();
-        this.typeToKey = new TypeToKey();
+        this.lines = new ArrayList<List<Token>>();
+        this.assignType = new AssignType();
     }
 
-    public List<List<KeyValueToken>> tokenize() {
+    public List<List<Token>> tokenize() {
 
         //we process the text one char at a time
         for (int i = 0; i < sourceCode.length(); i++) {
@@ -60,7 +71,7 @@ public class Tokenizer {
 
             //if the char is a delimiter or statment terminator we have a token and have to add it to the current line
             if(isValueChanger(currentChar)) {
-                KeyValueToken token;
+                Token token;
 
                 //add the current value
                 if(!currentValue.toString().isEmpty()) {
@@ -80,6 +91,7 @@ public class Tokenizer {
                         }
                         currentValue.append(currentChar);
                         token = getKeyValueToken(TEXT, currentValue.toString());
+                        token.setType(TYPES.STRING);
                         storeFoundToken(token);
                         continue;
                     }
@@ -111,18 +123,18 @@ public class Tokenizer {
             currentValue.append(currentChar);
 
         }
-        lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getKey()+" : "+token.getValue())));
+        lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType()+" - "+token.getValue())));
 
         return lines;
     }
 
-    private static KeyValueToken getKeyValueToken(BASIC_GRAMMAR grammarKey, String currentValue) {
-        return new KeyValueToken(grammarKey, currentValue);
+    private static Token getKeyValueToken(BASIC_GRAMMAR grammarKey, String currentValue) {
+        return new Token(grammarKey, currentValue);
     }
 
     //Array factory
-    private List<KeyValueToken> getNewLine() {
-        return new ArrayList<KeyValueToken>();
+    private List<Token> getNewLine() {
+        return new ArrayList<Token>();
     }
 
     //checks if the character is a new line
@@ -184,11 +196,12 @@ public class Tokenizer {
     * Once a delimiter or a statement terminator is found we store the "cached token" into the read values
     * Meaning that the token that was being cached is now finished and a new one is supposed to be read
     * */
-    private void storeFoundToken(KeyValueToken token) {
+    private void storeFoundToken(Token token) {
         if(token.getKey() == null) {
-            BASIC_GRAMMAR key = typeToKey.getKeyToType().getOrDefault(token.getValue(), null);
+            BASIC_GRAMMAR key = assignType.getKeyToData().getOrDefault(token.getValue(), null);
+            TYPES type = assignType.getKeyToType().getOrDefault(token.getValue(), null);
             token.setKey(key);
-
+            token.setType(type);
         }
         currentLine.add(token);
         currentValue = new StringBuilder();

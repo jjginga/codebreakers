@@ -1,14 +1,14 @@
 package breakers.code;
 
-import breakers.code.grammar.tokens.KeyValueToken;
+import breakers.code.grammar.tokens.Token;
 
 import java.util.*;
 
 public class Parser {
 
 
-    private List<KeyValueToken> tokenMapListLine;
-    private List<List<KeyValueToken>> lines;
+    private List<Token> tokenMapListLine;
+    private List<List<Token>> lines;
 
     // Each line ends with ";"
     // [
@@ -30,7 +30,7 @@ public class Parser {
     public Parser() {
     }
 
-    public List<List<KeyValueToken>> parse(List<List<KeyValueToken>> lines) {
+    public List<List<Token>> parse(List<List<Token>> lines) {
         return null;
     }
 

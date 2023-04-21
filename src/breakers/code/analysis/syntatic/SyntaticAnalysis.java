@@ -1,6 +1,5 @@
 package breakers.code.analysis.syntatic;
 
-import breakers.code.grammar.tokens.KeyValueToken;
 import breakers.code.grammar.tokens.Token;
 
 import java.util.ArrayList;
@@ -9,14 +8,14 @@ import java.util.List;
 import java.util.Map;
 
 public class SyntaticAnalysis {
-    public boolean validateSyntax (List<List<KeyValueToken>> lines) {
+    public boolean validateSyntax (List<List<Token>> lines) {
 
-        for (List<KeyValueToken> line : lines) {
-            line.stream().forEach(keyValueToken -> {
-                if(keyValueToken.getKey().getType() == "BASIC_VAR"){
+        for (List<Token> line : lines) {
+            line.stream().forEach(token -> {
+                if(token.getKey().getData() == "BASIC_VAR"){
                     //validateBasicVar()
                 }
-                if(keyValueToken.getKey().getType() == "PARENTHESES"){
+                if(token.getKey().getData() == "PARENTHESES"){
                     //validateLogicParentheses()
                 }
             });
@@ -32,13 +31,13 @@ public class SyntaticAnalysis {
 
     //TODO: Variable and constant definitions validation
     //variable declared in a const block, i.e. const{}
-    public boolean validateConstantDefinition(List<KeyValueToken> line) {
+    public boolean validateConstantDefinition(List<Token> line) {
 
         return false;
     }
 
     //different from variable definition
-    public boolean validateVariableDefinition(List<KeyValueToken> line) {
+    public boolean validateVariableDefinition(List<Token> line) {
         return false;
     }
 
@@ -46,7 +45,7 @@ public class SyntaticAnalysis {
     //TODO: validate funtion declaration
     //name | parameters | return type
     //the function code block dealt with elswere, this is just function declaration
-    public boolean validateFunctionDeclaration(List<KeyValueToken> line) {
+    public boolean validateFunctionDeclaration(List<Token> line) {
         return false;
     }
 
@@ -57,20 +56,20 @@ public class SyntaticAnalysis {
     }
 
     //TODO: validate flow Control
-    public boolean validateIfStatement(List<KeyValueToken> line) {
+    public boolean validateIfStatement(List<Token> line) {
         return false;
     }
 
-    public boolean validateWhileStatement(List<KeyValueToken> line) {
+    public boolean validateWhileStatement(List<Token> line) {
         return false;
     }
 
-    public boolean validateForStatement(List<KeyValueToken> line) {
+    public boolean validateForStatement(List<Token> line) {
         return false;
     }
 
     //the variable, constant, function has been declared before being used?
-    public boolean hasBeenDeclared(List<KeyValueToken> line) {
+    public boolean hasBeenDeclared(List<Token> line) {
         return false;
     }
 
@@ -80,18 +79,18 @@ public class SyntaticAnalysis {
     }
 
     //validafe if all statments end with a semicolon
-    public boolean validateStatementsEndWithSemicolon(List<KeyValueToken> line) {
+    public boolean validateStatementsEndWithSemicolon(List<Token> line) {
         return false;
     }
 
     //TODO: Validate IO funtions
     //validate the use of the read | read_all |read_string command
-    public boolean validateIORead(List<KeyValueToken> line) {
+    public boolean validateIORead(List<Token> line) {
         return false;
     }
 
     //validate the use of the write | write_all |write_string command
-    public boolean validateIOWrite(List<KeyValueToken> line) {
+    public boolean validateIOWrite(List<Token> line) {
         return false;
     }
 
@@ -136,7 +135,7 @@ public class SyntaticAnalysis {
 
     private List<Integer> findPositionsOfMathSymbols (
             List<String> mathSymbols,
-            List<KeyValueToken> line
+            List<Token> line
     ){
         List<Integer> mathSymbolsPositions = new ArrayList<>();
         for (String mathSymbol : mathSymbols) {
@@ -157,7 +156,7 @@ public class SyntaticAnalysis {
     /*
     * param -> line containing tokens: e.g: [(BASIC_VAR, "int"), ("VAR_NAME", "a"), ("BASIC_SYMBOL", "="), ("NUMBER", "12"), ("BASIC_SYMBOL", ";")]
      * */
-    public boolean validateLogicParentheses(List<KeyValueToken> line) {
+    public boolean validateLogicParentheses(List<Token> line) {
         return false;
     }
 

@@ -1,6 +1,6 @@
 package breakers.code;
 
-import breakers.code.grammar.tokens.KeyValueToken;
+import breakers.code.grammar.tokens.Token;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +15,7 @@ public class Main {
         String string = new String(Files.readAllBytes(Path.of(filePath)));
 
         Tokenizer tokenizer = new Tokenizer(string);
-        List<List<KeyValueToken>> tokenized = tokenizer.tokenize();
+        List<List<Token>> tokenized = tokenizer.tokenize();
 
         Parser parser = new Parser();
         parser.parse(tokenized);
