@@ -24,7 +24,7 @@ public class TypeToKey {
     }
 
     private Map<BASIC_GRAMMAR, String> TypeToKeyMapping() {
-        Map<BASIC_GRAMMAR, String> map = Stream.of(
+            return Stream.of(
                         EnumSet.allOf(BASIC_DELIMITERS.class),
                         EnumSet.allOf(BASIC_VAR.class),
                         EnumSet.allOf(COMMENT_DELIMITER.class),
@@ -40,7 +40,6 @@ public class TypeToKey {
                         BASIC_GRAMMAR::getType
                 ));
 
-        return map;
     }
 
     private Map<String, BASIC_GRAMMAR> KeyToTypeMapping(Map<BASIC_GRAMMAR, String> map) {

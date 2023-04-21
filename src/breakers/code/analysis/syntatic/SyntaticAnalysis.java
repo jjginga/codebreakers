@@ -17,7 +17,7 @@ public class SyntaticAnalysis {
                     //validateBasicVar()
                 }
                 if(keyValueToken.getKey().getType() == "PARENTHESES"){
-                    validateLogicParentheses()
+                    //validateLogicParentheses()
                 }
             });
 
@@ -30,6 +30,76 @@ public class SyntaticAnalysis {
         return false;
     }
 
+    //TODO: Variable and constant definitions validation
+    //variable declared in a const block, i.e. const{}
+    public boolean validateConstantDefinition(List<KeyValueToken> line) {
+
+        return false;
+    }
+
+    //different from variable definition
+    public boolean validateVariableDefinition(List<KeyValueToken> line) {
+        return false;
+    }
+
+
+    //TODO: validate funtion declaration
+    //name | parameters | return type
+    //the function code block dealt with elswere, this is just function declaration
+    public boolean validateFunctionDeclaration(List<KeyValueToken> line) {
+        return false;
+    }
+
+
+    //square_root, pow, gen
+    public boolean validateSpecialInternalFunctions(int currentPosition) {
+        return false;
+    }
+
+    //TODO: validate flow Control
+    public boolean validateIfStatement(List<KeyValueToken> line) {
+        return false;
+    }
+
+    public boolean validateWhileStatement(List<KeyValueToken> line) {
+        return false;
+    }
+
+    public boolean validateForStatement(List<KeyValueToken> line) {
+        return false;
+    }
+
+    //the variable, constant, function has been declared before being used?
+    public boolean hasBeenDeclared(List<KeyValueToken> line) {
+        return false;
+    }
+
+    //validate if the function arguments are correct and in the correct order
+    public boolean validateFunctionArguments(){
+        return false;
+    }
+
+    //validafe if all statments end with a semicolon
+    public boolean validateStatementsEndWithSemicolon(List<KeyValueToken> line) {
+        return false;
+    }
+
+    //TODO: Validate IO funtions
+    //validate the use of the read | read_all |read_string command
+    public boolean validateIORead(List<KeyValueToken> line) {
+        return false;
+    }
+
+    //validate the use of the write | write_all |write_string command
+    public boolean validateIOWrite(List<KeyValueToken> line) {
+        return false;
+    }
+
+
+    //TODO: Think of variables with members x.t
+
+
+    //TODO MATH expressions should also follow precedence rules
     public boolean validateMathExpressions(int currentPosition) {
         // A math expression must contain a valid number or variable before and after the operator
         // Exception when a number is negative e.g: -2
