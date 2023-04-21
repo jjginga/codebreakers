@@ -22,3 +22,5 @@ main() bool {
             }
         # fact tem o valor de retorno
 }
+
+int v[10];

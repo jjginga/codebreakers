@@ -9,6 +9,7 @@ public enum TYPES {
     VARIABLE_NAME,
     VECTOR_NAME,
     FUNCTION_NAME,
+    CONSTANT_NAME,
     BASIC_TYPE,
     GENERAL,
     IO_FUNCTION,

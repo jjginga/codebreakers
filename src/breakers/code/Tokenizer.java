@@ -6,14 +6,19 @@ import breakers.code.grammar.tokens.lexems.delimiters.COMPOSED_OPERATORS;
 import breakers.code.grammar.tokens.lexems.delimiters.OPERATORS;
 import breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS;
 import breakers.code.grammar.tokens.lexems.delimiters.PONCTUATION;
-import breakers.code.grammar.tokens.lexems.literals.STRING;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static breakers.code.grammar.tokens.lexems.GENERAL_SCHEMA.CONST;
+import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.*;
+import static breakers.code.grammar.tokens.lexems.identifiers.CON_NAMES.CON_NAME;
+import static breakers.code.grammar.tokens.lexems.identifiers.FUN_NAMES.FUN_NAME;
+import static breakers.code.grammar.tokens.lexems.identifiers.VAR_NAMES.VAR_NAME;
+import static breakers.code.grammar.tokens.lexems.identifiers.VEC_NAMES.VEC_NAME;
+import static breakers.code.grammar.tokens.lexems.literals.NUMBERS.NUMBER;
 import static breakers.code.grammar.tokens.lexems.literals.STRING.TEXT;
 
 
@@ -112,6 +117,7 @@ public class Tokenizer {
 
                 //if is statement terminator we should add the current line to the list of lines and
                 //create a new one
+                //TODO - o } é uma linha
                 if(isStatementTerminator(currentChar)) {
                     lines.add(currentLine);
                     currentLine = getNewLine();
@@ -123,9 +129,77 @@ public class Tokenizer {
             currentValue.append(currentChar);
 
         }
+
+        assignVectorName();
+
+        assignConstantName();
+
+        assignFunctionName();
+
+        assignVariableName();
+
+        assignNumeric();
+
         lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType()+" - "+token.getValue())));
 
         return lines;
+    }
+
+    //tokens with type null that match numeric pattern
+    private void assignNumeric() {
+        lines.stream().forEach(line -> line.stream()
+                .filter(token -> token.getType() == null && token.getValue().matches("\\d+"))
+                .forEach(token -> token.setTypeAndKey(TYPES.NUMERIC, NUMBER)));
+    }
+
+    //if previous is BASIC_TYPE and has next
+    private void assignVariableName() {
+        lines.stream().forEach(line -> line.stream()
+                .filter(token -> token.getType() == null) // filter null elements
+                .filter(token -> {
+                    int currentIndex = line.indexOf(token);
+                    return currentIndex > 0 && currentIndex < line.size() - 1 // has previous and next element
+                            && line.get(currentIndex - 1).getType() == TYPES.BASIC_TYPE; // previous is BASIC_TYPE
+                })
+                .forEach(token -> token.setTypeAndKey(TYPES.VARIABLE_NAME, VAR_NAME)));
+    }
+
+    //if first in line or previous is  }
+    private void assignFunctionName() {
+        lines.stream().forEach(line -> line.stream()
+                .filter(token -> token.getType() == null)
+                .filter(token -> {
+                    int currentIndex = line.indexOf(token);
+                        return (currentIndex==0 && line.size() > 1 && line.get(currentIndex + 1).getKey() == LPAREN)
+                                || (currentIndex > 0 && line.get(currentIndex - 1).getKey() == RBRACE);
+                })
+                .forEach(token -> token.setTypeAndKey(TYPES.FUNCTION_NAME, FUN_NAME)
+                ));
+    }
+
+    //if
+    private void assignConstantName() {
+        lines.stream().forEach(line -> line.stream()
+                .filter(token -> token.getType() == null) 
+                .filter(token -> {
+                    int currentIndex = line.indexOf(token);
+                    return line.get(0).getKey() == CONST 
+                            && currentIndex > 0 && currentIndex < line.size() - 1 
+                            && line.get(currentIndex - 1).getType() == TYPES.BASIC_TYPE; 
+                })
+                .forEach(token -> token.setTypeAndKey(TYPES.CONSTANT_NAME, CON_NAME )));
+    }
+
+    private void assignVectorName() {
+        lines.stream().forEach(line -> line.stream()
+                .filter(token -> token.getType() == null) 
+                .filter(token -> {
+                    int currentIndex = line.indexOf(token);
+                    return currentIndex > 0 && currentIndex < line.size() - 1 
+                            && line.get(currentIndex - 1).getType() == TYPES.BASIC_TYPE 
+                            && line.get(currentIndex + 1).getKey() == LBRACKET; 
+                })
+                .forEach(token -> token.setTypeAndKey(TYPES.VECTOR_NAME, VEC_NAME)));
     }
 
     private static Token getKeyValueToken(BASIC_GRAMMAR grammarKey, String currentValue) {

@@ -45,4 +45,9 @@ public class Token {
     public void setType(TYPES type) {
         this.type = type;
     }
+
+    public void setTypeAndKey(TYPES type, BASIC_GRAMMAR key){
+        this.type = type;
+        this.key = key;
+    }
 }

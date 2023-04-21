@@ -8,7 +8,8 @@ public enum GENERAL_SCHEMA implements BASIC_GRAMMAR {
     STRUCTS("structs"),
     CONST("const"),
     GLOBAL("global"),
-    MAIN("main");
+    MAIN("main"),
+    LOCAL("local");
 
     private String data;
 
