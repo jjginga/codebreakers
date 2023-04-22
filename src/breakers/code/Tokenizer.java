@@ -9,6 +9,7 @@ import breakers.code.grammar.tokens.lexems.delimiters.PONCTUATION;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -138,6 +139,9 @@ public class Tokenizer {
 
         assignVariableName();
 
+        verifyNullTokenTypesAndAssignAlreadyPresentVariables();
+
+
         assignNumeric();
 
         lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType()+" - "+token.getValue())));
@@ -152,16 +156,47 @@ public class Tokenizer {
                 .forEach(token -> token.setTypeAndKey(TYPES.NUMERIC, NUMBER)));
     }
 
-    //if previous is BASIC_TYPE and has next
+    //if previous is BASIC_TYPE and has next OR if it's after or before OPERATOR and it's not a number
     private void assignVariableName() {
         lines.stream().forEach(line -> line.stream()
                 .filter(token -> token.getType() == null) // filter null elements
                 .filter(token -> {
                     int currentIndex = line.indexOf(token);
-                    return currentIndex > 0 && currentIndex < line.size() - 1 // has previous and next element
-                            && line.get(currentIndex - 1).getType() == TYPES.BASIC_TYPE; // previous is BASIC_TYPE
+                    return (currentIndex > 0 && currentIndex < line.size() - 1 // has previous and next element
+                            && line.get(currentIndex - 1).getType() == TYPES.BASIC_TYPE); // previous is BASIC_TYPE
                 })
                 .forEach(token -> token.setTypeAndKey(TYPES.VARIABLE_NAME, VAR_NAME)));
+    }
+
+    // Might be needed in the near future
+    public static boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(NumberFormatException e){
+            return false;
+        }
+    }
+
+    public void verifyNullTokenTypesAndAssignAlreadyPresentVariables() {
+        int lineIndexCurrentToken = 0;
+        for (List<Token> line : lines) {
+            for (Token currentToken : line) {
+                if(currentToken.getType() == null) {
+                    for (int j = 0; j < lineIndexCurrentToken; j++) {
+                        List<Token> previousLine = lines.get(j);
+                        previousLine.stream().forEach(previousToken -> {
+                            if (previousToken.getType() != null
+                                    && previousToken.getValue().equals(currentToken.getValue())
+                            ) {
+                                currentToken.setTypeAndKey(previousToken.getType(), previousToken.getKey());
+                            }
+                        });
+                    }
+                }
+            }
+            lineIndexCurrentToken++;
+        }
     }
 
     //if first in line or previous is  }

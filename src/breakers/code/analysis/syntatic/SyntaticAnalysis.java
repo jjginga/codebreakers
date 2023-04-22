@@ -116,7 +116,7 @@ public class SyntaticAnalysis {
     /*
     * This validation should be a part of the math expression validation
     * */
-    public boolean validateNumberOrVariableBeforeAfterSymbol(List<KeyValueToken> line) {
+    public boolean validateNumberOrVariableBeforeAfterSymbol(List<Token> line) {
         // TODO -> use enum instead to enumerate the math symbols and have them in the grammar
         List<String> mathSymbols = new ArrayList<>(List.of("+", "-", "/", "*"));
 
@@ -165,7 +165,7 @@ public class SyntaticAnalysis {
     * Validate if the var name is syntactically correct
     * that is, starts with a lietter (upper or lower case) and contains only letters, numbers and underscores
     * */
-    public boolean validateVariableName(KeyValueToken variableName) {
+    public boolean validateVariableName(Token variableName) {
         return false;
     }
 
