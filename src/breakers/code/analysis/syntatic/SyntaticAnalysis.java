@@ -2,10 +2,7 @@ package breakers.code.analysis.syntatic;
 
 import breakers.code.grammar.tokens.Token;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SyntaticAnalysis {
     public boolean validateSyntax(List<List<Token>> lines) {
@@ -109,6 +106,8 @@ public class SyntaticAnalysis {
     //TODO: validate function declaration
     //name | parameters | return type
     //the function code block dealt with elswere, this is just function declaration
+    //verify if a function declaration is valid and exists
+
     public boolean validateFunctionDeclaration(List<Token> line) {
         return false;
     }
@@ -321,58 +320,49 @@ public class SyntaticAnalysis {
 
 
     //TODO MATH expressions should also follow precedence rules
-    public boolean validateMathExpressions(int currentPosition) {
+    public boolean validateMathExpressions(List<Token> line) {
+        ValidationResult parenthesesValidation = validateLogicParentheses(line);
+        if (!parenthesesValidation.isValid()) {
+            // Tratar erro de parênteses, se necessário
+            return false;
+        }
 
-        // A math expression must contain a valid number or variable before and after the operator
-        // Exception when a number is negative e.g: -2
-
-        // Go back until finds something that is not number or variable
-
-        //y=x+z; -> válido
-        //y=x+; -> invalido
-        //2+3-> valido
-        //2+-> invalido
-        //2+(3+4)-> valido
-        //2+(3+)-> invalido
-        //2*3-> valido
-        //2*-> invalido
-
-
-        return false;
+        boolean numberOrVariableValidation = validateNumberOrVariableBeforeAfterSymbol(line);
+        return numberOrVariableValidation;
     }
 
     /*
      * This validation should be a part of the math expression validation
      * */
     public boolean validateNumberOrVariableBeforeAfterSymbol(List<Token> line) {
-        // TODO -> use enum instead to enumerate the math symbols and have them in the grammar
         List<String> mathSymbols = new ArrayList<>(List.of("+", "-", "/", "*"));
 
         List<Integer> positions = findPositionsOfMathSymbols(mathSymbols, line);
 
         if (positions.size() > 0) {
-            positions.stream().forEach(index -> {
+            for (int index : positions) {
                 String tokenBeforeSymbol = line.get(index - 1).getValue();
                 String tokenAfterSymbol = line.get(index + 1).getValue();
 
-                // TODO -> check if it's variable or number before or after the symbol
-            });
+                if (!isNumberOrVariable(tokenBeforeSymbol) || !isNumberOrVariable(tokenAfterSymbol)) {
+                    return false;
+                }
+            }
         }
-        return false;
+        return true;
     }
 
-    private List<Integer> findPositionsOfMathSymbols(
-            List<String> mathSymbols,
-            List<Token> line
-    ) {
-        List<Integer> mathSymbolsPositions = new ArrayList<>();
-        for (String mathSymbol : mathSymbols) {
-            Integer index = line.indexOf(mathSymbol);
-
-            mathSymbolsPositions.add(index);
+    public List<Integer> findPositionsOfMathSymbols(List<String> mathSymbols, List<Token> line) {
+        List<Integer> positions = new ArrayList<>();
+        for (int i = 0; i < line.size(); i++) {
+            if (mathSymbols.contains(line.get(i).getValue())) {
+                positions.add(i);
+            }
         }
-
-        return mathSymbolsPositions;
+        return positions;
+    }
+    public boolean isNumberOrVariable(String tokenValue) {
+        return tokenValue.matches("-?\\d+(\\.\\d+)?") || tokenValue.matches("[a-zA-Z]+");
     }
 
 
@@ -390,11 +380,11 @@ public class SyntaticAnalysis {
         int position = 0;
         int openParenthesesPosition = -1;
         for (Token token : line) {
-            if (token.getKey().getData() == "PARENTHESES" && token.getValue() == "(") {
+            if (token.getKey().getData().equals("PARENTHESES") && token.getValue().equals( "(")) {
                 stack.push(token);
                 openParenthesesPosition = position;
             }
-            if (token.getKey().getData() == "PARENTHESES" && token.getValue() == ")") {
+            if (token.getKey().getData().equals("PARENTHESES") && token.getValue().equals(")")) {
                 if (stack.isEmpty()) {
                     return new ValidationResult(false, position);
                 }
