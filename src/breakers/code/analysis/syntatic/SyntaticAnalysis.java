@@ -1,17 +1,44 @@
 package breakers.code.analysis.syntatic;
 
+import breakers.code.grammar.tokens.TYPES;
 import breakers.code.grammar.tokens.Token;
+import breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS;
+import breakers.code.grammar.tokens.lexems.identifiers.VAR_NAMES;
 
 import java.util.*;
+
+import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.LPAREN;
+import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.RPAREN;
 
 public class SyntaticAnalysis {
     public boolean validateSyntax(List<List<Token>> lines) {
         boolean isValid = true;
+        for (int currentLinePosition = 0; currentLinePosition < lines.size(); currentLinePosition++) {
+            List<Token> line = lines.get(currentLinePosition);
+            for (int currentTokenPosition = 0; currentTokenPosition < line.size(); currentTokenPosition++) {
+                Token token = line.get(currentTokenPosition);
 
-        for (List<Token> line : lines) {
-            line.stream().forEach(token -> {
+                if (token.getKey() == PARENTHESIS.LPAREN || token.getKey() == PARENTHESIS.RPAREN) {
+                    ValidationResult validationResult = validateLogicParentheses(line);
+                    if (!validationResult.isValid()) {
+                        int currentLineToPrint = currentLinePosition + 1;
+                        int currentErrorPositionToPrint = validationResult.getErrorPosition() + 1;
+                        System.out.println("Invalid syntax at line " + currentLineToPrint + " at position " + currentErrorPositionToPrint);
+                    }
+                }
 
-            });
+                if (token.getKey() == VAR_NAMES.VAR_NAME) {
+                    boolean isVariableNameValid = validateVariableName(token);
+
+                    int currentLineToPrint = currentLinePosition + 1;
+                    int currentErrorPositionToPrint = currentTokenPosition + 1;
+
+                    if (!isVariableNameValid) {
+                        System.out.println("Invalid syntax at line " + currentLineToPrint + " at position " + currentErrorPositionToPrint);
+                    }
+                }
+            }
+
 
 
             //[ {BASIC_VAR, const }, {BRACKET, "{" }, {BASIC_VAR, "int"}], [{FUNC_TYPE, max}], [{NUMBER, 100}, {DELIMITER, ";"}, ]
@@ -380,11 +407,11 @@ public class SyntaticAnalysis {
         int position = 0;
         int openParenthesesPosition = -1;
         for (Token token : line) {
-            if (token.getKey().getData().equals("PARENTHESES") && token.getValue().equals( "(")) {
+            if (token.getType() != null && token.getType().equals(TYPES.PARENTHESIS) && token.getValue() != null && token.getValue().equals(LPAREN.getData())) {
                 stack.push(token);
                 openParenthesesPosition = position;
             }
-            if (token.getKey().getData().equals("PARENTHESES") && token.getValue().equals(")")) {
+            if (token.getType() != null && token.getType().equals(TYPES.PARENTHESIS) && token.getValue() != null  && token.getValue().equals(RPAREN.getData())) {
                 if (stack.isEmpty()) {
                     return new ValidationResult(false, position);
                 }

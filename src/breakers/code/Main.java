@@ -19,6 +19,8 @@ public class Main {
 
         Parser parser = new Parser();
         parser.parse(tokenized);
-        //parser.tokenize(string);
+
+        SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis();
+        syntaticAnalysis.validateSyntax(tokenized);
     }
 }

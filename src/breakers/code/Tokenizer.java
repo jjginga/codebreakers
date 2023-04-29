@@ -9,11 +9,11 @@ import breakers.code.grammar.tokens.lexems.delimiters.PONCTUATION;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static breakers.code.grammar.tokens.lexems.GENERAL_SCHEMA.CONST;
+import static breakers.code.grammar.tokens.lexems.STATEMENT_TERMINATOR.SEMICOLON;
 import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.*;
 import static breakers.code.grammar.tokens.lexems.identifiers.CON_NAMES.CON_NAME;
 import static breakers.code.grammar.tokens.lexems.identifiers.FUN_NAMES.FUN_NAME;
@@ -76,7 +76,7 @@ public class Tokenizer {
                 continue;
 
             //if the char is a delimiter or statment terminator we have a token and have to add it to the current line
-            if(isValueChanger(currentChar)) {
+            if(isValueChanger(currentChar, i)) {
                 Token token;
 
                 //add the current value
