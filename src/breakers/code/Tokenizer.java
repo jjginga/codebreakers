@@ -1,13 +1,16 @@
 package breakers.code;
 
+import breakers.code.analysis.syntatic.SyntaticAnalysis;
 import breakers.code.grammar.tokens.*;
 import breakers.code.grammar.tokens.lexems.*;
 import breakers.code.grammar.tokens.lexems.delimiters.COMPOSED_OPERATORS;
 import breakers.code.grammar.tokens.lexems.delimiters.OPERATORS;
 import breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS;
 import breakers.code.grammar.tokens.lexems.delimiters.PONCTUATION;
+import breakers.code.grammar.tokens.lexems.literals.BOOL_VAR;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -19,6 +22,8 @@ import static breakers.code.grammar.tokens.lexems.identifiers.CON_NAMES.CON_NAME
 import static breakers.code.grammar.tokens.lexems.identifiers.FUN_NAMES.FUN_NAME;
 import static breakers.code.grammar.tokens.lexems.identifiers.VAR_NAMES.VAR_NAME;
 import static breakers.code.grammar.tokens.lexems.identifiers.VEC_NAMES.VEC_NAME;
+import static breakers.code.grammar.tokens.lexems.literals.BOOL_VAR.FALSE;
+import static breakers.code.grammar.tokens.lexems.literals.BOOL_VAR.TRUE;
 import static breakers.code.grammar.tokens.lexems.literals.NUMBERS.NUMBER;
 import static breakers.code.grammar.tokens.lexems.literals.STRING.TEXT;
 
@@ -63,7 +68,7 @@ public class Tokenizer {
             /* # comentários começam com o símbolo # e vão até ao fim da linha */
             if (isCommentDelimiter(sourceCode.charAt(i))) {
                 // Ignore the rest of the line
-                while (i < sourceCode.length() && !isNewLine(sourceCode.charAt(i))){
+                while (i < sourceCode.length() && !isNewLine(sourceCode.charAt(i))) {
                     i++;
                 }
                 continue;
@@ -72,26 +77,27 @@ public class Tokenizer {
             char currentChar = sourceCode.charAt(i);
 
             //if is space or new line we ignore
-            if(currentValue.length()==0 && isToBeIgnored(currentChar))
+            if (currentValue.length() == 0 && isToBeIgnored(currentChar))
                 continue;
 
             //if the char is a delimiter or statment terminator we have a token and have to add it to the current line
-            if(isValueChanger(currentChar, i)) {
+            if (isValueChanger(currentChar)) {
                 Token token;
 
+
                 //add the current value
-                if(!currentValue.toString().isEmpty()) {
+                if (!currentValue.toString().isEmpty()) {
                     token = getKeyValueToken(null, currentValue.toString());
                     storeFoundToken(token);
                 }
 
                 //the char is statment terminator or delimiter
-                if(!isToBeIgnored(currentChar)) {
+                if (!isToBeIgnored(currentChar)) {
 
-                    if(isStringDelimiter(currentChar)) {
+                    if (isStringDelimiter(currentChar)) {
                         currentValue.append(currentChar);
                         currentChar = sourceCode.charAt(++i);
-                        while(!isStringDelimiter(currentChar)) {
+                        while (!isStringDelimiter(currentChar)) {
                             currentValue.append(currentChar);
                             currentChar = sourceCode.charAt(++i);
                         }
@@ -104,7 +110,7 @@ public class Tokenizer {
 
                     // composed delimiter like "==" --> We add the two chars as a single token and move the counter 2 indexes ahead
                     String composedString = getComposedString(currentChar, i);
-                    if(isComposedDelimiter(composedString)){
+                    if (isComposedDelimiter(composedString)) {
                         token = getKeyValueToken(null, composedString);
                         storeFoundToken(token);
                         // Move
@@ -119,7 +125,7 @@ public class Tokenizer {
                 //if is statement terminator we should add the current line to the list of lines and
                 //create a new one
                 //TODO - o } é uma linha
-                if(isStatementTerminator(currentChar)) {
+                if (isStatementTerminator(currentChar)) {
                     lines.add(currentLine);
                     currentLine = getNewLine();
                 }
@@ -141,10 +147,11 @@ public class Tokenizer {
 
         verifyNullTokenTypesAndAssignAlreadyPresentVariables();
 
-
         assignNumeric();
 
-        lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType()+" - "+token.getValue())));
+        assignBooleanValues();
+
+        lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType() + " - " + token.getValue())));
 
         return lines;
     }
@@ -237,6 +244,20 @@ public class Tokenizer {
                 .forEach(token -> token.setTypeAndKey(TYPES.VECTOR_NAME, VEC_NAME)));
     }
 
+    private void assignBooleanValues() {
+        lines.stream().forEach(line -> line.stream()
+                .filter(token -> token.getType() == null && token.getValue().matches("true|false"))
+                .forEach(token -> {
+                    if(token.getValue().equals("true")) {
+                        token.setTypeAndKey(TYPES.BOOLEAN, BOOL_VAR.TRUE);
+                    } else {
+                        token.setTypeAndKey(TYPES.BOOLEAN, BOOL_VAR.FALSE);
+                    }
+                })
+        );
+    }
+
+
     private static Token getKeyValueToken(BASIC_GRAMMAR grammarKey, String currentValue) {
         return new Token(grammarKey, currentValue);
     }
@@ -280,6 +301,7 @@ public class Tokenizer {
 
         return false;
     }
+
 
     private boolean isStringDelimiter (char c) {
         String str = String.valueOf(c);

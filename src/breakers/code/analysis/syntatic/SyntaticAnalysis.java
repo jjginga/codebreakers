@@ -7,14 +7,22 @@ import breakers.code.grammar.tokens.lexems.identifiers.VAR_NAMES;
 
 import java.util.*;
 
-import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.LPAREN;
-import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.RPAREN;
+import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.*;
+import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.RBRACE;
 
 public class SyntaticAnalysis {
-    public boolean validateSyntax(List<List<Token>> lines) {
+    List<List<Token>> lines;
+
+    public SyntaticAnalysis(List<List<Token>> lines) {
+        this.lines = lines;
+    }
+    public boolean validateSyntax() {
         boolean isValid = true;
         for (int currentLinePosition = 0; currentLinePosition < lines.size(); currentLinePosition++) {
+
+
             List<Token> line = lines.get(currentLinePosition);
+
             for (int currentTokenPosition = 0; currentTokenPosition < line.size(); currentTokenPosition++) {
                 Token token = line.get(currentTokenPosition);
 
@@ -23,7 +31,7 @@ public class SyntaticAnalysis {
                     if (!validationResult.isValid()) {
                         int currentLineToPrint = currentLinePosition + 1;
                         int currentErrorPositionToPrint = validationResult.getErrorPosition() + 1;
-                        System.out.println("Invalid syntax at line " + currentLineToPrint + " at position " + currentErrorPositionToPrint);
+                        System.out.println("Invalid syntax at line " + currentLineToPrint + " at position " + currentErrorPositionToPrint + " token: " + token.getValue());
                     }
                 }
 
@@ -34,7 +42,7 @@ public class SyntaticAnalysis {
                     int currentErrorPositionToPrint = currentTokenPosition + 1;
 
                     if (!isVariableNameValid) {
-                        System.out.println("Invalid syntax at line " + currentLineToPrint + " at position " + currentErrorPositionToPrint);
+                        System.out.println("Invalid syntax at line " + currentLineToPrint + " at position " + currentErrorPositionToPrint + " token: " + token.getValue());
                     }
                 }
             }

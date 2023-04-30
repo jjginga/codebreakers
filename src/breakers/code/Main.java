@@ -1,5 +1,6 @@
 package breakers.code;
 
+import breakers.code.analysis.syntatic.SyntaticAnalysis;
 import breakers.code.grammar.tokens.Token;
 
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class Main {
         Parser parser = new Parser();
         parser.parse(tokenized);
 
-        SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis();
-        syntaticAnalysis.validateSyntax(tokenized);
+        SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis(tokenized);
+        syntaticAnalysis.validateSyntax();
     }
 }

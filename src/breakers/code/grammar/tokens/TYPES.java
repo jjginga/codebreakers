@@ -21,6 +21,7 @@ public enum TYPES {
     CONSTANT,
     NUMERIC,
     STRING,
-    FUNCTION
+    FUNCTION,
+    BOOLEAN;
 
 }
