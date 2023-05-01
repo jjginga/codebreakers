@@ -9,7 +9,7 @@ public enum RESERVED_WORDS implements BASIC_GRAMMAR {
    ELSE("else"),
    WHILE("while"),
    FOR("for"),
-   RETURN("return"),;
+   RETURN("return");
 
     private String data;
 

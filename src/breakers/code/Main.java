@@ -18,10 +18,11 @@ public class Main {
         Tokenizer tokenizer = new Tokenizer(string);
         List<List<Token>> tokenized = tokenizer.tokenize();
 
-        Parser parser = new Parser();
-        parser.parse(tokenized);
-
-        SyntaticAnalysis syntaticAnalysis = new SyntaticAnalysis(tokenized);
-        syntaticAnalysis.validateSyntax();
+        Parser parser = new Parser(tokenized);
+        try {
+            parser.parse();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

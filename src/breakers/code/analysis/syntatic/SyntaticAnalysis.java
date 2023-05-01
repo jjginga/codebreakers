@@ -9,6 +9,8 @@ import java.util.*;
 
 import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.*;
 import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.RBRACE;
+import static breakers.code.grammar.tokens.lexems.literals.BOOL_VAR.FALSE;
+import static breakers.code.grammar.tokens.lexems.literals.BOOL_VAR.TRUE;
 
 public class SyntaticAnalysis {
     List<List<Token>> lines;
@@ -16,6 +18,11 @@ public class SyntaticAnalysis {
     public SyntaticAnalysis(List<List<Token>> lines) {
         this.lines = lines;
     }
+
+    public SyntaticAnalysis() {
+
+    }
+
     public boolean validateSyntax() {
         boolean isValid = true;
         for (int currentLinePosition = 0; currentLinePosition < lines.size(); currentLinePosition++) {
@@ -56,6 +63,10 @@ public class SyntaticAnalysis {
         }
 
         return false;
+    }
+
+    public boolean isBoolean(Token currentToken) {
+        return currentToken.getKey() == TRUE || currentToken.getKey() == FALSE;
     }
 
     public class ValidationResult {
@@ -397,8 +408,18 @@ public class SyntaticAnalysis {
         return positions;
     }
     public boolean isNumberOrVariable(String tokenValue) {
-        return tokenValue.matches("-?\\d+(\\.\\d+)?") || tokenValue.matches("[a-zA-Z]+");
+        return isNumeric(tokenValue) || tokenValue.matches("[a-zA-Z]+");
     }
+
+    private boolean isNumeric(String tokenValue) {
+        return tokenValue.matches("-?\\d+(\\.\\d+)?");
+    }
+
+    public boolean isNumber(Token token) {
+        return isNumeric(token.getValue());
+    }
+
+
 
 
     /*

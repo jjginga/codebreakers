@@ -1,6 +1,5 @@
 package breakers.code;
 
-import breakers.code.analysis.syntatic.SyntaticAnalysis;
 import breakers.code.grammar.tokens.*;
 import breakers.code.grammar.tokens.lexems.*;
 import breakers.code.grammar.tokens.lexems.delimiters.COMPOSED_OPERATORS;
@@ -10,20 +9,16 @@ import breakers.code.grammar.tokens.lexems.delimiters.PONCTUATION;
 import breakers.code.grammar.tokens.lexems.literals.BOOL_VAR;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static breakers.code.grammar.tokens.lexems.GENERAL_SCHEMA.CONST;
-import static breakers.code.grammar.tokens.lexems.STATEMENT_TERMINATOR.SEMICOLON;
 import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.*;
 import static breakers.code.grammar.tokens.lexems.identifiers.CON_NAMES.CON_NAME;
 import static breakers.code.grammar.tokens.lexems.identifiers.FUN_NAMES.FUN_NAME;
 import static breakers.code.grammar.tokens.lexems.identifiers.VAR_NAMES.VAR_NAME;
 import static breakers.code.grammar.tokens.lexems.identifiers.VEC_NAMES.VEC_NAME;
-import static breakers.code.grammar.tokens.lexems.literals.BOOL_VAR.FALSE;
-import static breakers.code.grammar.tokens.lexems.literals.BOOL_VAR.TRUE;
 import static breakers.code.grammar.tokens.lexems.literals.NUMBERS.NUMBER;
 import static breakers.code.grammar.tokens.lexems.literals.STRING.TEXT;
 
@@ -151,7 +146,7 @@ public class Tokenizer {
 
         assignBooleanValues();
 
-        lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType() + " - " + token.getValue())));
+        lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType() + " - " + token.getValue() + " - " + token.getKey())));
 
         return lines;
     }

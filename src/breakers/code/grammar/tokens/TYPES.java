@@ -22,6 +22,9 @@ public enum TYPES {
     NUMERIC,
     STRING,
     FUNCTION,
-    BOOLEAN;
+    BOOLEAN,
+    PROGRAM,
+    BOOL_EXPRESSION,
+    EOF;
 
 }
