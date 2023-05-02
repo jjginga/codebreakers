@@ -13,7 +13,8 @@ public enum NEED_FOR_PARSING implements BASIC_GRAMMAR {
     FOR_END("for_end"),
     FOR_INCREMENT("for_increment"),
     ASSIGNMENT("assignment"),
-    EXPRESSION("expression");
+    EXPRESSION("expression"),
+    ARGUMENTS("arguments");
 
     private String data;
 

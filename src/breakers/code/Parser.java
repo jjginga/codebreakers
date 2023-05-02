@@ -27,6 +27,7 @@ import static breakers.code.grammar.tokens.lexems.identifiers.FUN_NAMES.FUN_NAME
 import static breakers.code.grammar.tokens.lexems.identifiers.VAR_NAMES.VAR_NAME;
 import static breakers.code.grammar.tokens.lexems.identifiers.VEC_NAMES.VEC_NAME;
 import static breakers.code.grammar.tokens.lexems.literals.BOOL_VAR.FALSE;
+import static breakers.code.grammar.tokens.lexems.literals.BOOL_VAR.TRUE;
 import static breakers.code.grammar.tokens.lexems.literals.NUMBERS.NUMBER;
 import static breakers.code.grammar.tokens.lexems.literals.STRING.TEXT;
 import static breakers.code.grammar.tokens.lexems.literals.VEC_VALUES.VEC_VALUE;
@@ -153,6 +154,17 @@ public class Parser {
         Node main = new Node(currentToken);
 
         eat(MAIN);
+
+        if(currentToken.getKey() == EQUALS){
+            //TODO: check if return type is of same type has main return type.
+            eat(EQUALS);
+            Node return_value = parseExpression();
+            main.addChild(return_value);
+            eat(SEMICOLON);
+            return main;
+        }
+
+
         eat(LPAREN);
         eat(RPAREN);
 
@@ -174,9 +186,26 @@ public class Parser {
     /**Parsing Function Declaration**/
     private Node parseFunctionDeclaration() throws Exception {
         Node func_name = new Node(currentToken);
-
         eat(FUN_NAME);
+
         eat(LPAREN);
+
+        Node arguments = new Node(new Token(ARGUMENTS, "arguments", FUNCTION));
+        while (currentToken.getKey() != RPAREN) {
+            Node argumentType = parseType();
+            Node argumentName = new Node(currentToken);
+            eat(currentToken.getKey());
+
+            argumentName.addChild(argumentType);
+            arguments.addChild(argumentName);
+
+            if (currentToken.getKey() == COMMA) {
+                eat(COMMA);
+            }
+        }
+        if(arguments.getChildren().size()>0)
+            func_name.addChild(arguments);
+
         eat(RPAREN);
 
         Node return_type = parseType();
@@ -186,6 +215,13 @@ public class Parser {
         eat(LBRACE);
         currentScope = func_name.getToken().getValue();
         createScope();
+        //If is LBRACE we are on local function definition
+        if(currentToken.getKey()==LBRACE){
+            eat(LBRACE);
+            Node localVariables = parseLocalVariableInsideFunction();
+            func_name.addChild(localVariables);
+            eat(RBRACE);
+        }
         while(currentToken.getKey()!=RBRACE){
              func_name.addChild(parseStatement());
         }
@@ -293,6 +329,16 @@ public class Parser {
             localVariables.addChild(parseLocalVariable());
         }
         eat(RBRACE);
+        eat(SEMICOLON);
+        return localVariables;
+    }
+
+    private Node parseLocalVariableInsideFunction() throws Exception {
+        Node localVariables = new Node(currentToken);
+        eat(LOCAL);
+        while(currentToken.getKey()!=SEMICOLON){
+            localVariables.addChild(parseLocalVariable());
+        }
         eat(SEMICOLON);
         return localVariables;
     }
@@ -435,6 +481,9 @@ public class Parser {
             } else if (currentToken.getKey() == VAR_NAME || currentToken.getKey() == VEC_NAME || currentToken.getKey() == CON_NAME) {
                 Node varNode = parseIdentifier(currentToken.getKey());
                 writeNode.addChild(varNode);
+            } else if(currentToken.getKey() == FUN_NAME) {
+                Node funcNode = parseFunctionCall();
+                writeNode.addChild(funcNode);
             } else if (currentToken.getKey() == COMMA) {
                 eat(COMMA);
             } else {
@@ -446,6 +495,27 @@ public class Parser {
         eat(SEMICOLON);
 
         return writeNode;
+    }
+
+    private Node parseFunctionCall() throws Exception {
+        Node funcNode = new Node(currentToken);
+        eat(FUN_NAME);
+        eat(LPAREN);
+
+        // Parsing function arguments
+        if (currentToken.getKey() != RPAREN) {
+            funcNode.addChild(parseExpression());
+            consumeToken();
+            while (currentToken.getKey() == COMMA) {
+                eat(COMMA);
+                funcNode.addChild(parseExpression());
+            }
+        }
+
+        eat(RPAREN);
+
+        return funcNode;
+
     }
 
 
@@ -524,7 +594,11 @@ public class Parser {
             Node node = new Node(currentToken);
             eat(NUMBER);
             return node;
-        } else if (currentToken.getKey() == VAR_NAME) {
+        } else if (currentToken.getKey() == TRUE || currentToken.getKey() == FALSE) {
+            Node node = new Node(currentToken);
+            eat(currentToken.getKey());
+            return node;
+        }else if (currentToken.getKey() == VAR_NAME) {
             Node var_name = new Node(currentToken);
             if(!globalVariableNames.contains(var_name.getToken().getValue())
                     && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue()))

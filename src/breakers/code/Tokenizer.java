@@ -9,7 +9,9 @@ import breakers.code.grammar.tokens.lexems.delimiters.PONCTUATION;
 import breakers.code.grammar.tokens.lexems.literals.BOOL_VAR;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -203,6 +205,7 @@ public class Tokenizer {
 
     //if first in line or previous is  }
     private void assignFunctionName() {
+        Set<String> set = new HashSet();
         lines.stream().forEach(line -> line.stream()
                 .filter(token -> token.getType() == null)
                 .filter(token -> {
@@ -210,8 +213,16 @@ public class Tokenizer {
                         return (currentIndex==0 && line.size() > 1 && line.get(currentIndex + 1).getKey() == LPAREN)
                                 || (currentIndex > 0 && line.get(currentIndex - 1).getKey() == RBRACE);
                 })
-                .forEach(token -> token.setTypeAndKey(TYPES.FUNCTION_NAME, FUN_NAME)
+                .forEach(token -> {
+                    token.setTypeAndKey(TYPES.FUNCTION_NAME, FUN_NAME);
+                    set.add(token.getValue());
+                }
                 ));
+        lines.stream().forEach(line -> line.stream()
+                .filter(token -> token.getType() == null)
+                .filter(token -> set.contains(token.getValue()))
+                .forEach(token -> token.setTypeAndKey(TYPES.FUNCTION_NAME, FUN_NAME))
+        );
     }
 
     //if
