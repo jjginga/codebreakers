@@ -1,5 +1,6 @@
 package breakers.code;
 
+import breakers.code.analysis.syntatic.Node;
 import breakers.code.grammar.tokens.Token;
 
 import java.io.IOException;
@@ -19,9 +20,10 @@ public class Main {
 
         Parser parser = new Parser(tokenized);
         try {
-            parser.parse();
+            Node node = parser.parse();
+            System.out.println(node.toString());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
         }
     }
 }

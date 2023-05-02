@@ -1,14 +1,6 @@
 # Programa fatorial, versão não recursiva
 # Não tem estruturas nem variáveis globais
 const{ int max=100; }
-#throws error -
-#structs { #início
-#point2D {float x,y;}; # point2D é composta por 2 reais x e y
-#point3D {float x,y,z;}; # point3D por 3 reais x, y e z
-#pointND {float x[];}; # pointnD é um vetor de reais
-#}
-
-#throws error float y=3.14 - o número não vem classificado do Tokenizer
 
 global{ int x=1; bool z=true; int v[];}
 
@@ -18,6 +10,7 @@ main() bool {
     n = read();
     if(n > max or n < 0){
         write(“Erro!!!”);
+        write("teste");
         }
     else {
         write(n,”! = “,fact(n));

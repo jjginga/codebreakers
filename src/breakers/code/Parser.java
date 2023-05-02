@@ -1,7 +1,7 @@
 package breakers.code;
 
 import breakers.code.analysis.syntatic.Node;
-import breakers.code.analysis.syntatic.SyntaticAnalysis;
+import breakers.code.analysis.syntatic.Utils;
 import breakers.code.grammar.tokens.TYPES;
 import breakers.code.grammar.tokens.Token;
 import breakers.code.grammar.tokens.lexems.BASIC_GRAMMAR;
@@ -43,13 +43,13 @@ public class Parser {
     private Set<String> structNames = new HashSet<String>(); //struct names must be unique
     private Set<String> globalVariableNames = new HashSet<String>(); //global variable name can be overwritten
     private Map<String,Set<String>> localVariableNames= new HashMap<>();
-    private SyntaticAnalysis syntaticAnalysis;
+    private Utils utils;
 
     public Parser(List<List<Token>> tokens){
         //this.tokens is a flat map of tokens
         this.tokens = tokens.stream().flatMap(List::stream).collect(Collectors.toList());
         this.index = 0;
-        this.syntaticAnalysis = new SyntaticAnalysis();
+        this.utils = new Utils();
     }
 
     public Node parse() throws Exception {
@@ -444,7 +444,7 @@ public class Parser {
     }
 
     private Node parseValue() throws Exception {
-        if(!syntaticAnalysis.isNumber(currentToken) && !syntaticAnalysis.isBoolean(currentToken)){
+        if(!utils.isNumber(currentToken) && !utils.isBoolean(currentToken)){
             throw new SyntaxErrorException("Invalid value: " + currentToken.getKey());
         }
 
@@ -453,7 +453,7 @@ public class Parser {
 
     private Node parseIdentifier(BASIC_GRAMMAR key) throws Exception {
         //if the identifier is not a valid name we throw an exception
-        if(!syntaticAnalysis.validateVariableName(currentToken))
+        if(!utils.validateVariableName(currentToken))
             throw new SyntaxErrorException("Invalid name " + key + ": " + currentToken.getKey());
         return getNode();
     }
@@ -829,18 +829,14 @@ public class Parser {
 
 
     private Token getCurrentToken(){
+        if(index >= tokens.size())
+            return null;
         return tokens.get(index);
     }
 
     private void consumeToken() throws Exception {
         index++;
-        if(index >= tokens.size()){
-            currentToken = null;
-            return;
-        }
         currentToken = getCurrentToken();
-        if(currentToken == null)
-            throw new Exception("Unexpected end of file");
     }
 
     private void eat(BASIC_GRAMMAR key) throws Exception {

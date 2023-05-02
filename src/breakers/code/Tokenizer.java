@@ -133,6 +133,7 @@ public class Tokenizer {
             currentValue.append(currentChar);
 
         }
+        //adding the last line
         lines.add(currentLine);
         assignVectorName();
 
@@ -148,7 +149,8 @@ public class Tokenizer {
 
         assignBooleanValues();
 
-        lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType() + " - " + token.getValue() + " - " + token.getKey())));
+        //print for debugging purposes
+        //lines.stream().forEach(line -> line.stream().forEach(token -> System.out.println(token.getType() + " - " + token.getValue() + " - " + token.getKey())));
 
         return lines;
     }
