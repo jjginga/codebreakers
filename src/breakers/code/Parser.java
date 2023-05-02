@@ -216,13 +216,16 @@ public class Parser {
         currentScope = func_name.getToken().getValue();
         createScope();
         //If is LBRACE we are on local function definition
-        if(currentToken.getKey()==LBRACE){
+        /**if(currentToken.getKey()==LBRACE){
             eat(LBRACE);
             Node localVariables = parseLocalVariableInsideFunction();
             func_name.addChild(localVariables);
             eat(RBRACE);
-        }
+        }**/
         while(currentToken.getKey()!=RBRACE){
+            if(currentToken.getKey()==FUN_NAME){
+                func_name.addChild(parseAssignment());
+            }
              func_name.addChild(parseStatement());
         }
         eat(RBRACE);
@@ -528,7 +531,8 @@ public class Parser {
             throw new SyntaxErrorException("Can not overwritte constant: " + var_name.getToken().getValue());
         
         if(!globalVariableNames.contains(var_name.getToken().getValue())
-            && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue()))
+            && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue())
+                && !currentScope.equals(var_name.getToken().getValue()))
             throw new SyntaxErrorException("Variable not declared: " + var_name.getToken().getValue());
         
         eat(EQUALS);
