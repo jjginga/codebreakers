@@ -18,6 +18,7 @@ import static breakers.code.grammar.tokens.lexems.INTERNAL_FUNCTIONS.*;
 import static breakers.code.grammar.tokens.lexems.NEED_FOR_PARSING.*;
 import static breakers.code.grammar.tokens.lexems.RESERVED_WORDS.*;
 import static breakers.code.grammar.tokens.lexems.STATEMENT_TERMINATOR.SEMICOLON;
+import static breakers.code.grammar.tokens.lexems.delimiters.COMPOSED_OPERATORS.MULEQUALS;
 import static breakers.code.grammar.tokens.lexems.delimiters.COMPOSED_OPERATORS.OR;
 import static breakers.code.grammar.tokens.lexems.delimiters.OPERATORS.*;
 import static breakers.code.grammar.tokens.lexems.delimiters.PARENTHESIS.*;
@@ -82,6 +83,8 @@ public class Parser {
             node = parseMain();
         } else if (key.equals(LOCAL)) {
             node = parseLocal();
+        } else if (key.equals(FUN_NAME) && currentScope.equals(currentToken.getValue())){
+            node = parseAssignment();
         } else if (key.equals(FUN_NAME)) {
             node = parseFunctionDeclaration();
         } else if (key.equals(IF)) {
@@ -186,6 +189,8 @@ public class Parser {
     /**Parsing Function Declaration**/
     private Node parseFunctionDeclaration() throws Exception {
         Node func_name = new Node(currentToken);
+        currentScope = func_name.getToken().getValue();
+        createScope();
         eat(FUN_NAME);
 
         eat(LPAREN);
@@ -196,6 +201,7 @@ public class Parser {
             Node argumentName = new Node(currentToken);
             eat(currentToken.getKey());
 
+            insertVariableNameInScope(argumentName);
             argumentName.addChild(argumentType);
             arguments.addChild(argumentName);
 
@@ -213,8 +219,7 @@ public class Parser {
         func_name.addChild(return_type);
 
         eat(LBRACE);
-        currentScope = func_name.getToken().getValue();
-        createScope();
+
         //If is LBRACE we are on local function definition
         /**if(currentToken.getKey()==LBRACE){
             eat(LBRACE);
@@ -223,9 +228,9 @@ public class Parser {
             eat(RBRACE);
         }**/
         while(currentToken.getKey()!=RBRACE){
-            if(currentToken.getKey()==FUN_NAME){
+            /*if(currentToken.getKey()==FUN_NAME){
                 func_name.addChild(parseAssignment());
-            }
+            }*/
              func_name.addChild(parseStatement());
         }
         eat(RBRACE);
@@ -321,8 +326,8 @@ public class Parser {
     private void createScope() {
         localVariableNames.put(currentScope, new HashSet<String>());
     }
-    private void insertVariableNameInScope(Node const_name) {
-        localVariableNames.get(currentScope).add(const_name.getToken().getValue());
+    private void insertVariableNameInScope(Node var_name) {
+        localVariableNames.get(currentScope).add(var_name.getToken().getValue());
     }
     private Node parseLocal() throws Exception {
         Node localVariables = new Node(currentToken);
@@ -534,7 +539,19 @@ public class Parser {
             && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue())
                 && !currentScope.equals(var_name.getToken().getValue()))
             throw new SyntaxErrorException("Variable not declared: " + var_name.getToken().getValue());
-        
+
+        //TODO: OTHER like +=, -=, *=, /=, %=
+        if(currentToken.getKey()==MULEQUALS){
+            Node operator = new Node(currentToken);
+            eat(MULEQUALS);
+            Node expression = parseExpression();
+            eat(currentToken.getKey());
+            var_name.addChild(operator);
+            var_name.addChild(expression);
+            eat(SEMICOLON);
+            return var_name;
+        }
+
         eat(EQUALS);
         
         Node assignmentExpression = null;
@@ -705,13 +722,13 @@ public class Parser {
         forNode.addChild(parseForVar());
 
 
-        eat(SEMICOLON);
+        eat(COMMA);
 
         forNode.addChild(parseForInit());
 
-        eat(SEMICOLON);
+        eat(COMMA);
         forNode.addChild(parseForEnd());
-        eat(SEMICOLON);
+        eat(COMMA);
 
         forNode.addChild(parseForUpdate());
 
@@ -726,11 +743,17 @@ public class Parser {
     }
 
     private Node parseForVar() throws Exception {
-        Node forInit = new Node(new Token(FOR_VAR, "for_var", INFORMATION_FLOW));
-        Node var_name = parseIdentifier(VAR_NAME);
+        Node forVar = new Node(new Token(FOR_VAR, "for_var", INFORMATION_FLOW));
+        Node var_name = new Node(currentToken);
+
+        if(!globalVariableNames.contains(var_name.getToken().getValue())
+                && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue())
+                && !currentScope.equals(var_name.getToken().getValue()))
+            throw new SyntaxErrorException("Variable not declared: " + var_name.getToken().getValue());
+
         eat(VAR_NAME);
-        forInit.addChild(var_name);
-        return forInit;
+        forVar.addChild(var_name);
+        return forVar;
     }
 
     private Node parseForInit() throws Exception {
@@ -744,6 +767,7 @@ public class Parser {
         Node forEnd = new Node(new Token(FOR_END, "for_end", INFORMATION_FLOW));
         Node end_value = parseExpression();
         forEnd.addChild(end_value);
+        consumeToken();
         return forEnd;
     }
 
@@ -810,6 +834,10 @@ public class Parser {
 
     private void consumeToken() throws Exception {
         index++;
+        if(index >= tokens.size()){
+            currentToken = null;
+            return;
+        }
         currentToken = getCurrentToken();
         if(currentToken == null)
             throw new Exception("Unexpected end of file");

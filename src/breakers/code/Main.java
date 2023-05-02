@@ -1,6 +1,5 @@
 package breakers.code;
 
-import breakers.code.analysis.syntatic.SyntaticAnalysis;
 import breakers.code.grammar.tokens.Token;
 
 import java.io.IOException;

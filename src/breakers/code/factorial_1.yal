@@ -2,15 +2,15 @@
 # Não tem estruturas nem variáveis globais
 const{ int max=100; }
 #throws error -
-structs { #início
-point2D {float x,y;}; # point2D é composta por 2 reais x e y
-point3D {float x,y,z;}; # point3D por 3 reais x, y e z
-pointND {float x[];}; # pointnD é um vetor de reais
-}
+#structs { #início
+#point2D {float x,y;}; # point2D é composta por 2 reais x e y
+#point3D {float x,y,z;}; # point3D por 3 reais x, y e z
+#pointND {float x[];}; # pointnD é um vetor de reais
+#}
 
 #throws error float y=3.14 - o número não vem classificado do Tokenizer
 
-global{ int x=1; bool z=true; float y=3.14 ;int v[];}
+global{ int x=1; bool z=true; int v[];}
 
 main() bool {
     local {int n};
@@ -33,5 +33,3 @@ main() bool {
             }
         # fact tem o valor de retorno
 }
-
-int v[10];

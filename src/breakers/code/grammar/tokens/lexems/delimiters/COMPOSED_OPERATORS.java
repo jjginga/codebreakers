@@ -12,6 +12,7 @@ public enum COMPOSED_OPERATORS implements BASIC_GRAMMAR {
     EQUALS_NOT_EQUALS("!="),
     LESS_THAN_OR_EQUALS("<="),
     GREATER_THAN_OR_EQUALS(">="),
+    MULEQUALS("*="),
 
     OR("or");
 

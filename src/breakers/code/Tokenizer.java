@@ -133,7 +133,7 @@ public class Tokenizer {
             currentValue.append(currentChar);
 
         }
-
+        lines.add(currentLine);
         assignVectorName();
 
         assignConstantName();
