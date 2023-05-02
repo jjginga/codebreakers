@@ -10,7 +10,7 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        String filePath = System.getProperty("user.dir") + "/src/breakers/code/" + "factorial_1.yal";
+        String filePath = System.getProperty("user.dir") + "/inbound/yailfile.yail";
         String string = new String(Files.readAllBytes(Path.of(filePath)));
 
         Tokenizer tokenizer = new Tokenizer(string);
