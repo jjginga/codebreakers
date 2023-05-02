@@ -43,6 +43,8 @@ public class Parser {
     private Set<String> structNames = new HashSet<String>(); //struct names must be unique
     private Set<String> globalVariableNames = new HashSet<String>(); //global variable name can be overwritten
     private Map<String,Set<String>> localVariableNames= new HashMap<>();
+
+    private SyntaxErrorCapturer syntaxErrorCapturer = new SyntaxErrorCapturer();
     private Utils utils;
 
     public Parser(List<List<Token>> tokens){
@@ -112,7 +114,7 @@ public class Parser {
 
             Node structName = parseIdentifier(STRUCT_NAME);
             if (structNames.contains(structName.getToken().getValue())) {
-                throw new SyntaxErrorException("Duplicate struct name: " + structName.getToken().getValue());
+                syntaxErrorCapturer.addSyntaxError("Duplicate struct name: " + structName.getToken().getValue());
             }
 
             structNames.add(structName.getToken().getValue());
@@ -141,7 +143,7 @@ public class Parser {
         Node fieldName = parseIdentifier(VAR_NAME);
 
         if (fieldType.getChildren().stream().anyMatch(n -> n.getToken().getValue().equals(fieldName.getToken().getValue()))) {
-            throw new SyntaxErrorException("Duplicate field name: " + fieldName.getToken().getValue());
+            syntaxErrorCapturer.addSyntaxError("Duplicate field name: " + fieldName.getToken().getValue());
         }
 
         eat(VAR_NAME);
@@ -256,7 +258,7 @@ public class Parser {
         Node const_type = parseType();
 
         if(constantNames.contains(currentToken.getValue()))
-            throw new SyntaxErrorException("Constant name already declared: " + currentToken.getValue());
+            syntaxErrorCapturer.addSyntaxError("Constant name already declared: " + currentToken.getValue());
 
         Node const_name = parseIdentifier(CON_NAME);
         constantNames.add(const_name.getToken().getValue());
@@ -298,7 +300,7 @@ public class Parser {
             globalVariables.addChild(parseGlobalVariable());
         }
         if(currentToken==null)
-            throw new SyntaxErrorException("Missing closing brace");
+            syntaxErrorCapturer.addSyntaxError("Missing closing brace");
         eat(RBRACE);
         return globalVariables;
     }
@@ -307,7 +309,7 @@ public class Parser {
         Node var_type = parseType();
 
         if(currentToken!=null && constantNames.contains(currentToken.getValue()))
-            throw new SyntaxErrorException("Can not overwritte constant: " + currentToken.getValue());
+            syntaxErrorCapturer.addSyntaxError("Can not overwritte constant: " + currentToken.getValue());
 
         Node const_name = null;
         if(currentToken.getKey()== VAR_NAME)
@@ -315,7 +317,7 @@ public class Parser {
         else if(currentToken.getKey() == VEC_NAME)
             const_name = parseVector(var_type);
         else
-            throw new SyntaxErrorException("Invalid global variable:" + currentToken.getValue());
+            syntaxErrorCapturer.addSyntaxError("Invalid global variable:" + currentToken.getValue());
 
 
         return const_name;
@@ -355,7 +357,7 @@ public class Parser {
         Node var_type = parseType();
 
         if(constantNames.contains(currentToken.getValue()))
-            throw new SyntaxErrorException("Can not overwritte constant: " + currentToken.getValue());
+            syntaxErrorCapturer.addSyntaxError("Can not overwritte constant: " + currentToken.getValue());
 
         Node var_name = parseIdentifier(VAR_NAME);
 
@@ -373,7 +375,7 @@ public class Parser {
         } else if(var_name.getToken().getKey()== VEC_NAME)
             var_value = parseVector(var_type);
         else
-            throw new SyntaxErrorException("Invalid global variable:" + currentToken.getValue());
+            syntaxErrorCapturer.addSyntaxError("Invalid global variable:" + currentToken.getValue());
 
         var_name.addChild(var_type);
         var_name.addChild(var_value);
@@ -435,7 +437,7 @@ public class Parser {
         eat(SEMICOLON);
 
         if(vec_contents.getChildren().size()!=Integer.parseInt(vec_size.getToken().getValue()))
-            throw new SyntaxErrorException("Invalid vector size: " + vec_name.getToken().getValue());
+            syntaxErrorCapturer.addSyntaxError("Invalid vector size: " + vec_name.getToken().getValue());
 
         vec_name.addChild(var_type);
         vec_name.addChild(vec_size);
@@ -445,7 +447,7 @@ public class Parser {
 
     private Node parseValue() throws Exception {
         if(!utils.isNumber(currentToken) && !utils.isBoolean(currentToken)){
-            throw new SyntaxErrorException("Invalid value: " + currentToken.getKey());
+            syntaxErrorCapturer.addSyntaxError("Invalid value: " + currentToken.getKey());
         }
 
         return getNode();
@@ -454,14 +456,14 @@ public class Parser {
     private Node parseIdentifier(BASIC_GRAMMAR key) throws Exception {
         //if the identifier is not a valid name we throw an exception
         if(!utils.validateVariableName(currentToken))
-            throw new SyntaxErrorException("Invalid name " + key + ": " + currentToken.getKey());
+            syntaxErrorCapturer.addSyntaxError("Invalid name " + key + ": " + currentToken.getKey());
         return getNode();
     }
 
     private Node parseType() throws Exception {
         //If the token does not match the expected types we throw an exception
         if(BASIC_VAR.stream().noneMatch(x->x==currentToken.getKey()) && !structNames.contains(currentToken.getValue())){
-            throw new SyntaxErrorException("Invalid Type: " + currentToken.getKey());
+            syntaxErrorCapturer.addSyntaxError("Invalid Type: " + currentToken.getKey());
         }
 
         return getNode();
@@ -495,7 +497,7 @@ public class Parser {
             } else if (currentToken.getKey() == COMMA) {
                 eat(COMMA);
             } else {
-                throw new SyntaxErrorException("Invalid token in write statement: " + currentToken.getKey());
+                syntaxErrorCapturer.addSyntaxError("Invalid token in write statement: " + currentToken.getKey());
             }
         }
 
@@ -533,12 +535,12 @@ public class Parser {
         Node var_name = parseIdentifier(VAR_NAME);
         
         if(constantNames.contains(var_name))
-            throw new SyntaxErrorException("Can not overwritte constant: " + var_name.getToken().getValue());
+            syntaxErrorCapturer.addSyntaxError("Can not overwritte constant: " + var_name.getToken().getValue());
         
         if(!globalVariableNames.contains(var_name.getToken().getValue())
             && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue())
                 && !currentScope.equals(var_name.getToken().getValue()))
-            throw new SyntaxErrorException("Variable not declared: " + var_name.getToken().getValue());
+            syntaxErrorCapturer.addSyntaxError("Variable not declared: " + var_name.getToken().getValue());
 
         //TODO: OTHER like +=, -=, *=, /=, %=
         if(currentToken.getKey()==MULEQUALS){
@@ -606,36 +608,33 @@ public class Parser {
     }
 
     private Node parseFactor() throws Exception {
+        Node node = new Node(currentToken); // forcing initialization
         if (currentToken.getKey() == LPAREN) {
             eat(LPAREN);
-            Node node = parseExpression();
+            node = parseExpression();
             eat(RPAREN);
-            return node;
         } else if (currentToken.getKey() == NUMBER) {
-            Node node = new Node(currentToken);
+            node = new Node(currentToken);
             eat(NUMBER);
-            return node;
         } else if (currentToken.getKey() == TRUE || currentToken.getKey() == FALSE) {
-            Node node = new Node(currentToken);
+            node = new Node(currentToken);
             eat(currentToken.getKey());
-            return node;
-        }else if (currentToken.getKey() == VAR_NAME) {
-            Node var_name = new Node(currentToken);
-            if(!globalVariableNames.contains(var_name.getToken().getValue())
-                    && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue()))
-                throw new SyntaxErrorException("Variable not declared: " + var_name.getToken().getValue());
+        } else if (currentToken.getKey() == VAR_NAME) {
+            node = new Node(currentToken);
+            if(!globalVariableNames.contains(node.getToken().getValue())
+                    && !localVariableNames.get(currentScope).contains(node.getToken().getValue()))
+                syntaxErrorCapturer.addSyntaxError("Variable not declared: " + node.getToken().getValue());
 
-            return var_name;
         } else if (currentToken.getKey() == VEC_NAME) {
-            Node vec_name = new Node(currentToken);
-            if(!globalVariableNames.contains(vec_name.getToken().getValue())
-                    && !localVariableNames.get(currentScope).contains(vec_name.getToken().getValue()))
-                throw new SyntaxErrorException("Vector not declared: " + vec_name.getToken().getValue());
-
-            return vec_name;
+            node = new Node(currentToken);
+            if(!globalVariableNames.contains(node.getToken().getValue())
+                    && !localVariableNames.get(currentScope).contains(node.getToken().getValue()))
+                syntaxErrorCapturer.addSyntaxError("Vector not declared: " + node.getToken().getValue());
         } else {
-            throw new SyntaxErrorException("Invalid syntax: " + currentToken.getKey());
+            syntaxErrorCapturer.addSyntaxError("Invalid syntax: " + currentToken.getKey());
         }
+
+        return node;
     }
 
 
@@ -749,7 +748,7 @@ public class Parser {
         if(!globalVariableNames.contains(var_name.getToken().getValue())
                 && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue())
                 && !currentScope.equals(var_name.getToken().getValue()))
-            throw new SyntaxErrorException("Variable not declared: " + var_name.getToken().getValue());
+            syntaxErrorCapturer.addSyntaxError("Variable not declared: " + var_name.getToken().getValue());
 
         eat(VAR_NAME);
         forVar.addChild(var_name);
@@ -797,7 +796,7 @@ public class Parser {
         if (COMPOSED_OPERATORS.stream().noneMatch(x -> x == currentToken.getKey())
                 && currentToken.getKey() != GREATER_THAN
                     && currentToken.getKey() != LESS_THAN)
-            throw new SyntaxErrorException("Invalid operator: " + currentToken.getKey());
+            syntaxErrorCapturer.addSyntaxError("Invalid operator: " + currentToken.getKey());
         Node operator = new Node(currentToken);
         consumeToken();
         Node value = null;
@@ -807,7 +806,7 @@ public class Parser {
             if(!globalVariableNames.contains(currentToken.getValue())
                     && !localVariableNames.get(currentScope).contains(currentToken.getValue())
                         && !constantNames.contains(currentToken.getValue()))
-                throw new SyntaxErrorException("Variable not declared: " + var_name.getToken().getValue());
+                syntaxErrorCapturer.addSyntaxError("Variable not declared: " + var_name.getToken().getValue());
             value = new Node(currentToken);
             consumeToken();
         }
@@ -843,8 +842,12 @@ public class Parser {
         if (currentToken.getKey() == key) {
             consumeToken();
         } else {
-            throw new Exception("Erro de sintaxe. Token inesperado: " + currentToken.getKey());
+            syntaxErrorCapturer.addSyntaxError("Erro de sintaxe. Token inesperado: " + currentToken.getKey());
         }
     }
 
+
+    public List<String> getSyntaxErrors() {
+        return syntaxErrorCapturer.getSyntaxErrors();
+    }
 }

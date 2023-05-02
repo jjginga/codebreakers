@@ -22,6 +22,11 @@ public class Main {
         try {
             Node node = parser.parse();
             System.out.println(node.toString());
+
+            ExceptionsWriter exceptionsWriter = new ExceptionsWriter(parser.getSyntaxErrors());
+
+            exceptionsWriter.writeExceptions();
+
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
