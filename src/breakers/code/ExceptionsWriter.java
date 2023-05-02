@@ -18,7 +18,7 @@ public class ExceptionsWriter {
             String directory = "/breakers/code/outbox";
             String fileName = "exceptions.txt";
 
-            FileWriter myWriter = new FileWriter(new File(".").getAbsolutePath() + "/outbound/exceptions.txt", true);
+            FileWriter myWriter = new FileWriter(new File(".").getAbsolutePath() + "/outbound/exceptions.txt", false);
 
             for (String exception : capturedExceptions) {
                 myWriter.write(exception + "\n");
