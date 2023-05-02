@@ -7,9 +7,7 @@ import java.util.stream.Stream;
 
 public enum STRING implements BASIC_GRAMMAR {
 
-    //name for \"
     TEXT("text");
-
 
 
     private String data;

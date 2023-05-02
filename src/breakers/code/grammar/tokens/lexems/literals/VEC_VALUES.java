@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 
 public enum VEC_VALUES implements BASIC_GRAMMAR {
 
-    //name for \"
     VEC_VALUE("vec_value");
 
     private String data;

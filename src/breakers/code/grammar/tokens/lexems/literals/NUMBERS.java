@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 
 public enum NUMBERS implements BASIC_GRAMMAR {
 
-    //name for \"
     NUMBER("number");
 
 
