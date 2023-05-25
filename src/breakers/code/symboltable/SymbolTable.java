@@ -35,4 +35,14 @@ public class SymbolTable {
         }
         currentScope--;
     }
+
+    public EntryConst getConstEntry() {
+        EntryTable current = this.root;
+        while (current.next != null) {
+            if(current instanceof EntryConst)
+                return (EntryConst) current;
+            current = current.next;
+        }
+        return null;
+    }
 }
