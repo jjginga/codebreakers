@@ -23,10 +23,12 @@ public class Main {
             Node node = parser.parse();
             System.out.println(node.toString());
 
-            SymbolTable symbolTable = new SymbolTable();
+            SymbolTable symbolTable = new SymbolTable(null);
 
             SymbolTableFiller symbolTableFiller = new SymbolTableFiller(node, symbolTable);
             symbolTableFiller.fillSymbolTable();
+
+            symbolTable.printAllSymbolEntries();
 
             ExceptionsWriter exceptionsWriter = new ExceptionsWriter(parser.getSyntaxErrors());
 

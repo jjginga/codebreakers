@@ -9,6 +9,7 @@ public class EntryFunction extends EntryTable {
 
 
     public EntryFunction (String name, EntryVar returnType) {
+        super(name);
         this.name = name;
         this.returnType = returnType;
         this.params = List.of();
