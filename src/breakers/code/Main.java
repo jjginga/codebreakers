@@ -28,7 +28,9 @@ public class Main {
             SymbolTableFiller symbolTableFiller = new SymbolTableFiller(node, symbolTable);
             symbolTableFiller.fillSymbolTable();
 
-            symbolTable.printAllSymbolEntries();
+            SymbolTable currentRoot = symbolTableFiller.getCurrentSymbolTable();
+
+            currentRoot.printAllSymbolEntries();
 
             ExceptionsWriter exceptionsWriter = new ExceptionsWriter(parser.getSyntaxErrors());
 
