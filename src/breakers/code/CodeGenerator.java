@@ -113,9 +113,24 @@ public class CodeGenerator {
     }
 
     private String generateAssignment(Node node) {
+        //is a complex operation
+        if(node.getChildren().get(1).getChildren().size()>1)
+            return generateComplexOperation(node);
         StringBuilder code = new StringBuilder();
         code.append(String.format(attr, i, node.getChildren().get(1).getToken().getValue()));
         code.append(String.format("%s = t%d%n", node.getChildren().get(0).getToken().getValue(), i++));
+        return code.toString();
+    }
+
+    private String generateComplexOperation(Node node){
+        StringBuilder code = new StringBuilder();
+        String operation = node.getChildren().get(1).getToken().getValue();
+        String left = node.getChildren().get(1).getChildren().get(0).getToken().getValue();
+        String right = node.getChildren().get(1).getChildren().get(1).getToken().getValue();
+        code.append(String.format(attr, i, left));
+        code.append(String.format(attr, i+1, right));
+        code.append(String.format("%s = t%d %s t%d%n", node.getChildren().get(0).getToken().getValue(), i, operation, i+1));
+        i+=2;
         return code.toString();
     }
 
@@ -172,31 +187,41 @@ public class CodeGenerator {
     private String generateFor(Node node) throws Exception {
         StringBuilder code = new StringBuilder();
         // Inicialização
-        String varName = node.getChildren().get(0).getToken().getValue();
-        String initValue = node.getChildren().get(1).getToken().getValue();
+        String varName = getChildValue(node.getChildren().get(0));
+        String initValue = getChildValue(node.getChildren().get(1));
+
         code.append(String.format(attr, i, initValue));
         code.append(String.format("%s = t%d%n", varName, i++));
 
         // Condição
-        String endValue = node.getChildren().get(2).getToken().getValue();
+        String endValue = getChildValue(node.getChildren().get(2));
+        String increment = getChildValue(node.getChildren().get(3));
+
+        // If is a var we shout consut the table
+        String booleanOperator = Integer.parseInt(increment) > 0 ? "<" : ">";
+
         int block1 = block++;
         code.append(String.format("L%d:%n", block1));
-        code.append(String.format("if %s > %s goto L%d%n", varName, endValue, block++));
+        code.append(String.format("if %s %s %s goto L%d%n", varName, booleanOperator, endValue, block++));
 
         // Corpo
-        code.append(generateIntermediateCode(node.getChildren().get(3)));
+        code.append(generateIntermediateCode(node.getChildren().get(4)));
 
         // Incremento
-        String increment = node.getChildren().get(4).getToken().getValue();
         code.append(String.format(attr, i, increment));
+        //if the increment is negative it doesn't matter
         code.append(String.format("%s = %s + t%d%n", varName, varName, i++));
 
         // Volta para a condição
         code.append(String.format("goto L%d%n", block1));
+        code.append(String.format("end for L%d%n", block1));
 
         return code.toString();
     }
 
+    private String getChildValue(Node node) {
+        return node.getChildren().get(0).getToken().getValue();
+    }
 
 
 

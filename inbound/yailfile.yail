@@ -8,12 +8,12 @@ main() bool {
     local {int n};
     write(“introduza um número entre 0 e “,max);
     n = read();
-    if(n = max or n < 0){
+    if(n > max or n < 0){
         write(“Erro!!!”);
         write("teste");
         }
     else {
-        write(n,”! = “,fact(n)));
+        write(n,”! = “,fact(n));
         main = true; # altera o valor de retorno da função main
         }
     }
