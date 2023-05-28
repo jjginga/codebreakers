@@ -573,6 +573,48 @@ public class Parser {
         return assignment;
     }
 
+    private Node parseFunctionAssignment() throws Exception{
+        Node assignment = new Node(new Token(ASSIGNMENT, "assignment", VARIABLE));
+        Node var_name = parseIdentifier(VAR_NAME);
+
+        if(constantNames.contains(var_name))
+            syntaxErrorCapturer.addSyntaxError("Can not overwritte constant: " + var_name.getToken().getValue());
+
+        if(!globalVariableNames.contains(var_name.getToken().getValue())
+                && !localVariableNames.get(currentScope).contains(var_name.getToken().getValue())
+                && !currentScope.equals(var_name.getToken().getValue()))
+            syntaxErrorCapturer.addSyntaxError("Variable not declared: " + var_name.getToken().getValue());
+
+        //TODO: OTHER like +=, -=, *=, /=, %=
+        if(currentToken.getKey()==MULEQUALS){
+            Node operator = new Node(currentToken);
+            eat(MULEQUALS);
+            Node expression = parseExpression();
+            eat(currentToken.getKey());
+            assignment.addChild(var_name);
+            assignment.addChild(expression);
+            eat(SEMICOLON);
+            return var_name;
+        }
+
+        eat(EQUALS);
+
+        Node assignmentExpression = null;
+
+        if(currentToken.getKey()==READ || currentToken.getKey()==READ_ALL || currentToken.getKey()==READ_STRING)
+            assignmentExpression = parseRead();
+        else if(currentToken.getKey()==POW || currentToken.getKey()==SQUARE_ROOT || currentToken.getKey()==GEN)
+            assignmentExpression = parseInternalFunction();
+        else
+            assignmentExpression = parseExpression();
+
+        eat(SEMICOLON);
+
+        assignment.addChild(var_name);
+        assignment.addChild(assignmentExpression);
+        return assignment;
+    }
+
     private Node parseExpression() throws Exception {
         Node expression = parseTerm();
 

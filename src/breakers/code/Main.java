@@ -2,6 +2,8 @@ package breakers.code;
 
 import breakers.code.analysis.syntatic.Node;
 import breakers.code.grammar.tokens.Token;
+import breakers.code.symboltable.SymbolTable;
+import breakers.code.symboltable.SymbolTableFiller;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +25,16 @@ public class Main {
             Node node = parser.parse();
             System.out.println(node.toString());
             System.out.println(codeGenerator.generateCode(node));
+
+            SymbolTable symbolTable = new SymbolTable(null);
+
+            SymbolTableFiller symbolTableFiller = new SymbolTableFiller(node, symbolTable);
+            symbolTableFiller.fillSymbolTable();
+
+            SymbolTable currentRoot = symbolTableFiller.getCurrentSymbolTable();
+
+            currentRoot.printAllSymbolEntries();
+
             ExceptionsWriter exceptionsWriter = new ExceptionsWriter(parser.getSyntaxErrors());
 
             exceptionsWriter.writeExceptions();
