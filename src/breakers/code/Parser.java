@@ -587,7 +587,7 @@ public class Parser {
         }
 
         while (currentToken != null && (currentToken.getKey() == MULEQUALS)) {
-            Node operator = new Node(currentToken);
+            Node operator = new Node(new Token(MUL, "*", OPERATOR));
             consumeToken();
 
             Node term = parseTerm();
