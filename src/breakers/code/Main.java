@@ -17,10 +17,12 @@ public class Main {
         List<List<Token>> tokenized = tokenizer.tokenize();
 
         Parser parser = new Parser(tokenized);
+
+        CodeGenerator codeGenerator = new CodeGenerator();
         try {
             Node node = parser.parse();
             System.out.println(node.toString());
-
+            System.out.println(codeGenerator.generateCode(node));
             ExceptionsWriter exceptionsWriter = new ExceptionsWriter(parser.getSyntaxErrors());
 
             exceptionsWriter.writeExceptions();

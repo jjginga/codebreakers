@@ -4,4 +4,3 @@ Invalid name VAR_NAME: RPAREN
 Variable not declared: )
 Erro de sintaxe. Token inesperado: SEMICOLON
 Invalid syntax: SEMICOLON
-Invalid operator: EQUALS
