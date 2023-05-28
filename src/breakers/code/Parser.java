@@ -544,14 +544,15 @@ public class Parser {
 
         //TODO: OTHER like +=, -=, *=, /=, %=
         if(currentToken.getKey()==MULEQUALS){
-            Node operator = new Node(currentToken);
-            eat(MULEQUALS);
             Node expression = parseExpression();
+            eat(MULEQUALS);
+
             eat(currentToken.getKey());
-            var_name.addChild(operator);
-            var_name.addChild(expression);
+            assignment.addChild(var_name);
+            assignment.addChild(expression);
+            expression.addChild(var_name);
             eat(SEMICOLON);
-            return var_name;
+            return assignment;
         }
 
         eat(EQUALS);
@@ -585,13 +586,23 @@ public class Parser {
             expression = operator;
         }
 
+        while (currentToken != null && (currentToken.getKey() == MULEQUALS)) {
+            Node operator = new Node(currentToken);
+            consumeToken();
+
+            Node term = parseTerm();
+
+            operator.addChild(term);
+            expression = operator;
+        }
+
         return expression;
     }
 
     private Node parseTerm() throws Exception {
         Node term = parseFactor();
 
-        while (currentToken.getKey() == MUL || currentToken.getKey() == DIV) {
+        while (currentToken.getKey() == MUL || currentToken.getKey() == DIV ) {
             Token operator = currentToken;
             eat(operator.getKey());
 
@@ -663,6 +674,14 @@ public class Parser {
         eat(LPAREN);
         eat(RPAREN);
         return internalFunction;
+    }
+
+    private Node parseMulEquals() throws Exception {
+        Node mulEquals = new Node(currentToken);
+        eat(MULEQUALS);
+
+
+        return mulEquals;
     }
 
     /**Parse other **/
