@@ -2,10 +2,12 @@ package breakers.code.symboltable;
 
 import breakers.code.analysis.syntatic.Node;
 import breakers.code.grammar.tokens.lexems.identifiers.FUN_NAMES;
+import breakers.code.grammar.tokens.lexems.identifiers.VAR_NAMES;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import static breakers.code.grammar.tokens.lexems.GENERAL_SCHEMA.MAIN;
 import static breakers.code.grammar.tokens.lexems.NEED_FOR_PARSING.ASSIGNMENT;
 import static breakers.code.grammar.tokens.lexems.RESERVED_WORDS.*;
 
@@ -27,6 +29,7 @@ public class SymbolTableFiller {
         add(ELSE.getData());
         add(WHILE.getData());
         add(FOR.getData());
+        add(MAIN.getData());
     }};
 
 
@@ -55,7 +58,12 @@ public class SymbolTableFiller {
         checkAndInsertVarEntry(node);
 
         // When the scope has ended go back to the previous symbol table #TODO
-        if(childrenInScopes.size() > 0 && childrenInScopes.size() > currentScopeLevel && childrenInScopes.get(currentScopeLevel).isEmpty() && symbolTable.prev != null) {
+        if(
+                childrenInScopes.size() > 0 &&
+                childrenInScopes.size() >= currentScopeLevel &&
+                childrenInScopes.get(currentScopeLevel-1).isEmpty() &&
+                symbolTable.prev != null
+        ) {
             symbolTable = symbolTable.prev;
             currentScopeLevel = symbolTable.currentScope;
         }
@@ -172,17 +180,30 @@ public class SymbolTableFiller {
     }
 
     private void checkAndInsertVarEntry(Node node) {
-        if (node.getToken() != null && node.getToken().getKey() != null && node.getToken().getKey().getData().equals("var")) {
-            String name = node.getChildren().get(0).getToken().getValue();
+        if (
+                node.getToken() != null &&
+                node.getToken().getKey() != null &&
+                node.getToken().getKey().getData() != null &&
+                node.getToken().getKey().getData().equals(VAR_NAMES.VAR_NAME.getData())
+        ) {
+            String name = node.getToken().getValue();
 
-            // If it was already inserted, return because it's a duplicate (already declared)
-            if (validateIfVariableWasAlreadyInserted(name) == true)
-                return;
+            EntryVar entryVar;
 
-            String type = node.getChildren().get(0).getChildren().get(0).getToken().getValue();
-            int dimension = 0; //var has dimension 0 (scalar) --> other dimensions are assigned as vec
+            if (isVariableDeclaration(node)) {
+                // If it was already inserted, return because it's a duplicate (already declared)
+                if(validateIfVariableWasAlreadyInserted(name) == true) {
+                    return;
+                }
 
-            EntryVar entryVar = new EntryVar(name, type, dimension);
+                String type = node.getChildren().get(0).getToken().getValue();
+                int dimension = 0; //var has dimension 0 (scalar) --> other dimensions are assigned as vec
+                entryVar = new EntryVar(name, type, dimension);
+            } else {
+                EntryVar declaredVar = (EntryVar) symbolTable.getSymbolTableEntry(name);
+                entryVar = new EntryVar(name, declaredVar.type, declaredVar.varDimension);
+            }
+
 
             symbolTable.addTableEntry(entryVar);
         }
@@ -202,6 +223,16 @@ public class SymbolTableFiller {
         if(symbolTable.getSymbolTableEntry(name) != null) {
             errors.add("Variável " + name + " já declarada");
             System.err.println("Variável " + name + " já declarada");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isVariableDeclaration(Node node) {
+        if(
+                node.getChildren() != null &&
+                node.getChildren().size() > 0
+        ) {
             return true;
         }
         return false;
@@ -230,7 +261,6 @@ public class SymbolTableFiller {
                 node.getChildren().get(1) != null && // return type
                 node.getChildren().get(1).getToken() != null &&
                 node.getChildren().get(1).getToken().getValue() != null
-
         ) {
             return true;
         }
@@ -240,12 +270,13 @@ public class SymbolTableFiller {
     }
 
     private boolean isFunctionCall(Node node) {
-        if(node.getChildren().size() < 2) {
-            return false;
-        }
 
-        if (node.getChildren().get(1) == null) { // return type
-            return false;
+        for (Node child : node.getChildren()) {
+            if(child.getToken() != null && child.getToken().getKey() != null && child.getToken().getKey().getData() != null) {
+                if(!child.getToken().getKey().getData().equals(VAR_NAMES.VAR_NAME.getData())) {
+                    return false;
+                }
+            }
         }
 
         return true;
