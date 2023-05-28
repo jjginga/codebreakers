@@ -1,6 +1,0 @@
-Invalid operator: EQUALS
-Erro de sintaxe. Token inesperado: RPAREN
-Invalid name VAR_NAME: RPAREN
-Variable not declared: )
-Erro de sintaxe. Token inesperado: SEMICOLON
-Invalid syntax: SEMICOLON
