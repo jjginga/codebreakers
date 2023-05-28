@@ -544,10 +544,11 @@ public class Parser {
 
         //TODO: OTHER like +=, -=, *=, /=, %=
         if(currentToken.getKey()==MULEQUALS){
-            Node expression = parseExpression();
             eat(MULEQUALS);
-
             eat(currentToken.getKey());
+
+            Node expression = parseExpression();
+
             assignment.addChild(var_name);
             assignment.addChild(expression);
             expression.addChild(var_name);
@@ -641,7 +642,10 @@ public class Parser {
             if(!globalVariableNames.contains(node.getToken().getValue())
                     && !localVariableNames.get(currentScope).contains(node.getToken().getValue()))
                 syntaxErrorCapturer.addSyntaxError("Vector not declared: " + node.getToken().getValue());
-        } else {
+        } else if(currentToken.getKey() == MUL || currentToken.getKey() == SEMICOLON || currentToken.getKey() == MULEQUALS) {
+            // do nothing
+        }
+        else {
             syntaxErrorCapturer.addSyntaxError("Invalid syntax: " + currentToken.getKey());
         }
 
@@ -814,7 +818,9 @@ public class Parser {
 
         if (COMPOSED_OPERATORS.stream().noneMatch(x -> x == currentToken.getKey())
                 && currentToken.getKey() != GREATER_THAN
-                    && currentToken.getKey() != LESS_THAN)
+                    && currentToken.getKey() != LESS_THAN
+                        && currentToken.getKey() != EQUALS
+        )
             syntaxErrorCapturer.addSyntaxError("Invalid operator: " + currentToken.getKey());
         Node operator = new Node(currentToken);
         consumeToken();
