@@ -544,10 +544,9 @@ public class Parser {
 
         //TODO: OTHER like +=, -=, *=, /=, %=
         if(currentToken.getKey()==MULEQUALS){
-            eat(MULEQUALS);
-            eat(currentToken.getKey());
 
             Node expression = parseExpression();
+            eat(currentToken.getKey());
 
             assignment.addChild(var_name);
             assignment.addChild(expression);
