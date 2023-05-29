@@ -24,7 +24,7 @@ public class Main {
         try {
             Node node = parser.parse();
             System.out.println(node.toString());
-            System.out.println(codeGenerator.generateCode(node));
+            codeGenerator.generateCode(node).forEach(System.out::println);
 
             SymbolTable symbolTable = new SymbolTable(null);
 
