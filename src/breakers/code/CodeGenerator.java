@@ -3,7 +3,11 @@ package breakers.code;
 import breakers.code.analysis.syntatic.Node;
 import breakers.code.grammar.tokens.TYPES;
 import breakers.code.grammar.tokens.lexems.BASIC_GRAMMAR;
-import breakers.code.grammar.tokens.lexems.identifiers.VAR_NAMES;
+import breakers.code.tac.ThreeAddressCode;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import static breakers.code.grammar.tokens.lexems.GENERAL_SCHEMA.*;
 import static breakers.code.grammar.tokens.lexems.INPUT_OUTPUT.READ;
@@ -18,147 +22,169 @@ public class CodeGenerator {
     int i = 0;
     int block = 1;
     final String attr = "t%d = %s%n";
+    List<ThreeAddressCode> code = new ArrayList<>();
 
     public CodeGenerator() {
     }
 
-    public String generateCode(Node root) throws Exception {
-        StringBuilder code = new StringBuilder();
+    public List<ThreeAddressCode> generateCode(Node root) throws Exception {
         for (Node child : root.getChildren())
-            code.append(generateIntermediateCode(child));
-        return code.toString();
+            code.addAll(generateIntermediateCode(child));
+        return code;
     }
 
-    private String generateIntermediateCode(Node node) throws Exception {
-        StringBuilder code = new StringBuilder();
+    private List<ThreeAddressCode> generateIntermediateCode(Node node) throws Exception {
+
 
         BASIC_GRAMMAR key = node.getToken().getKey();
         //Alternatively node.getToken().getKey(
         if (CONST.equals(key) || GLOBAL.equals(key) || LOCAL.equals(key))
-            code.append(generateAttribution(node));
+            code.addAll(generateAttribution(node));
         else if (MAIN.equals(key) || FUN_NAME.equals(key))
-            code.append(generateFunction(node));
+            code.addAll(generateFunction(node));
         else if (WRITE.equals(key))
-            code.append(generateWrite(node));
+            code.addAll(generateWrite(node));
         else if (READ.equals(key))
-            code.append(generateRead(node));
+            code.addAll(generateRead(node));
         else if (ASSIGNMENT.equals(key))
-            code.append(generateAssignment(node));
+            code.addAll(generateAssignment(node));
         else if (IF.equals(key))
-            code.append(generateIf(node));
+            code.addAll(generateIf(node));
         else if (WHILE.equals(key))
-            code.append(generateWhile(node));
+            code.addAll(generateWhile(node));
         else if (FOR.equals(key))
-        code.append(generateFor(node));
+        code.addAll(generateFor(node));
         else if (STRUCTS.equals(key))
-            code.append(generateStruct(node));
+            code.addAll(generateStruct(node));
 
         else if(ARGUMENTS.equals(key))
-            code.append(generateArguments(node));
+            code.addAll(generateArguments(node));
         else
-            code.append(String.format("Falta implementar: %s%n", key.getData()));
-        return code.toString();
+            System.out.println(String.format("Falta implementar: %s%n", key.getData()));
+        return code;
     }
 
-    private String generateFunction(Node node) throws Exception {
-        StringBuilder code = new StringBuilder();
-        code.append(String.format("function %s:%n", node.getToken().getValue()));
+    private List<ThreeAddressCode> generateFunction(Node node) throws Exception {
+        List<ThreeAddressCode> tac = new ArrayList<>();
+        tac.add(new ThreeAddressCode("function", node.getToken().getValue(), "", ""));
         for (Node child : node.getChildren()) {
             if (child.getToken().getKey().getType().equals(TYPES.BASIC_TYPE))
                 continue;
-            code.append(generateIntermediateCode(child));
+            tac.addAll(generateIntermediateCode(child));
         }
-        code.append(String.format("end function %s%n", node.getToken().getValue()));
-        return code.toString();
+        tac.add(new ThreeAddressCode("end function", node.getToken().getValue(), "", "")) ;
+        return tac;
     }
 
 
-    private String generateAttribution(Node node) {
-        StringBuilder code = new StringBuilder();
+    private List<ThreeAddressCode> generateAttribution(Node node) {
+        List<ThreeAddressCode> tac = new ArrayList<>();
 
         for (Node child : node.getChildren()) {
             String name = child.getToken().getValue();
             if (child.getChildren().size() > 1) {
                 //chid 0 is the type and child 1 is the value
                 String value = child.getChildren().get(1).getToken().getValue();
-                code.append(String.format(attr, i, value));
-                code.append(String.format("%s = t%d%n", name, i++));
+                String tx = String.format("t%d", i++);
+                tac.add(new ThreeAddressCode("=", value, "", tx));
+                tac.add(new ThreeAddressCode("=", tx, "", name));
             } else {
                 //I think that when there is no attribution - just deffinition nothing should be here
                 //code.append(String.format("%s\n", name));
             }
         }
 
-        return code.toString();
+        return tac;
     }
 
-    private String generateWrite(Node node) {
-        StringBuilder code = new StringBuilder();
+    private List<ThreeAddressCode> generateWrite(Node node) {
+        List<ThreeAddressCode> tac = new ArrayList<>();
         if (node.getChildren().size() > 1) {
-            StringBuilder aux = new StringBuilder();
             for (Node child : node.getChildren()) {
-                code.append(String.format(attr, i, node.getChildren().get(1).getToken().getValue()));
+                String value = child.getToken().getValue();
+                String tx = String.format("t%d", i++);
+                tac.add(new ThreeAddressCode("=", value, "", tx));
                 //in here we should consult the table to check the type of the variable
-                aux.append(String.format("t%d ", i++));
+                tac.add(new ThreeAddressCode("print", tx, "", ""));
             }
-
-            code.append("print ").append(aux.append(String.format("%n")).toString());
-
         } else {
-            code.append(String.format(attr, i, node.getChildren().get(0).getToken().getValue()));
-            code.append(String.format("print t%d%n", i++));
+            String value = node.getChildren().get(0).getToken().getValue();
+            String tx = String.format("t%d", i++);
+            tac.add(new ThreeAddressCode("=", value, "", tx));
+            tac.add(new ThreeAddressCode("print", tx, "", ""));
 
         }
-        return code.toString();
+        return tac;
     }
 
-    private String generateAssignment(Node node) {
+    private List<ThreeAddressCode> generateAssignment(Node node) {
         //is a complex operation
         if(node.getChildren().get(1).getChildren().size()>1)
             return generateComplexOperation(node);
-        StringBuilder code = new StringBuilder();
-        code.append(String.format(attr, i, node.getChildren().get(1).getToken().getValue()));
-        code.append(String.format("%s = t%d%n", node.getChildren().get(0).getToken().getValue(), i++));
-        return code.toString();
+        List<ThreeAddressCode> tac = new ArrayList<>();
+        String right = node.getChildren().get(1).getToken().getValue();
+        String left = node.getChildren().get(0).getToken().getValue();
+        String tx = String.format("t%d", i++);
+        tac.add(new ThreeAddressCode("=", right, "", tx));
+        tac.add(new ThreeAddressCode("=", tx, "", left));
+        return tac;
     }
 
-    private String generateComplexOperation(Node node){
-        StringBuilder code = new StringBuilder();
+    private List<ThreeAddressCode> generateComplexOperation(Node node){
+        List<ThreeAddressCode> tac = new ArrayList<>();
+
         String operation = node.getChildren().get(1).getToken().getValue();
         String left = node.getChildren().get(1).getChildren().get(0).getToken().getValue();
         String right = node.getChildren().get(1).getChildren().get(1).getToken().getValue();
-        code.append(String.format(attr, i, left));
-        code.append(String.format(attr, i+1, right));
-        code.append(String.format("%s = t%d %s t%d%n", node.getChildren().get(0).getToken().getValue(), i, operation, i+1));
-        i+=2;
-        return code.toString();
+        String tx1 = String.format("t%d", i++);
+        String tx2 = String.format("t%d", i++);
+        String result = node.getChildren().get(0).getToken().getValue();
+
+        tac.add(new ThreeAddressCode("=", left, "", tx1));
+        tac.add(new ThreeAddressCode("=", right, "", tx2));
+        tac.add(new ThreeAddressCode(operation, tx1, tx2, result));
+
+        return tac;
     }
 
     //TODO: this isn't oke - special case of assignment
-    private String generateRead(Node node) {
-        StringBuilder code = new StringBuilder();
-        code.append(String.format("%s = read%n", node.getChildren().get(0).getToken().getValue()));
-        return code.toString();
+    private List<ThreeAddressCode> generateRead(Node node) {
+        List<ThreeAddressCode> tac = new ArrayList<>();
+        String readInto = node.getChildren().get(0).getToken().getValue();
+        tac.add(new ThreeAddressCode("read", "", "", readInto));
+        return tac;
     }
 
-    private String generateIf(Node node) throws Exception {
-        StringBuilder code = new StringBuilder();
-        String conditions = generateBooleanExpressions(node.getChildren().get(0));
+    private List<ThreeAddressCode> generateIf(Node node) throws Exception {
+        List<ThreeAddressCode> tac = new ArrayList<>();
+
+        // Generate code for the boolean condition
+        List<ThreeAddressCode> conditions = generateBooleanExpressions(node.getChildren().get(0));
+        tac.addAll(conditions);
+
         int block1 = block++;
-        code.append(String.format("if %s goto L%d%n", conditions, block1));
+        tac.add(new ThreeAddressCode("if", conditions.get(conditions.size() - 1).getResult(), "goto", "L" + block1));
+
         //TODO: if contains else
         int block2 = block++;
         int block3 = block++;//if final
-        code.append(String.format("goto L%d%n", block2));
-        code.append(String.format("L%d:%n", block1));
-        code.append(generateIntermediateCode(node.getChildren().get(1)));
-        code.append(String.format("goto L%d%n", block3));
+        tac.add(new ThreeAddressCode("goto", "", "", "L" + block2));
 
-        code.append(String.format("L%d:%n", block2));
-        code.append(generateIntermediateCode(node.getChildren().get(2)));
-        code.append(String.format("L%d:%n", block3));
+        tac.add(new ThreeAddressCode("L" + block1, "", "", ""));
 
-        return code.toString();
+        List<ThreeAddressCode> thenBlock = generateIntermediateCode(node.getChildren().get(1));
+
+        tac.addAll(thenBlock);
+
+        tac.add(new ThreeAddressCode("goto", "", "", "L" + block3));
+        tac.add(new ThreeAddressCode("L" + block2, "", "", ""));
+
+        List<ThreeAddressCode> elseBlock = generateIntermediateCode(node.getChildren().get(2));
+        tac.addAll(elseBlock);
+
+        tac.add(new ThreeAddressCode("L"+block3, "", "", ""));
+
+        return tac;
     }
     private String generateWhile(Node node) throws Exception {
         // Inicializa um StringBuilder para construir o código intermediário.
