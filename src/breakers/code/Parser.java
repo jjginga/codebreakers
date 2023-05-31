@@ -81,6 +81,8 @@ public class Parser {
             //then we parse the global variables
         } else if (key.equals(GLOBAL)) {
             node = parseGlobal();
+        } else if (key.equals(MAIN) && currentScope.equals(currentToken.getValue())){
+            node = parseAssignment();
         } else if (key.equals(MAIN)) {
             node = parseMain();
         } else if (key.equals(LOCAL)) {
@@ -741,8 +743,11 @@ public class Parser {
         eat(RPAREN);
         eat(LBRACE);
 
+        Node ifThenNode = new Node(new Token(IF_BODY_, "if_body", IF_BODY));
         while(currentToken.getKey()!=RBRACE)
-             ifNode.addChild(parseStatement());
+             ifThenNode.addChild(parseStatement());
+
+        ifNode.addChild(ifThenNode);
 
         eat(RBRACE);
 

@@ -48,7 +48,7 @@ public class ThreeAddressCode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(result).append(" = ").append(operand1).append(" ").append(operator).append(" ").append(operand2);
+        sb.append(result).append(" ").append(operator).append(" ").append(operand1).append(" ").append(" ").append(operand2);
         return sb.toString();
     }
 }

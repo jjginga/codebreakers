@@ -3,7 +3,7 @@ package breakers.code;
 import breakers.code.analysis.syntatic.Node;
 import breakers.code.grammar.tokens.TYPES;
 import breakers.code.grammar.tokens.lexems.BASIC_GRAMMAR;
-import breakers.code.tac.ThreeAddressCode;
+import breakers.code.tac.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +34,7 @@ public class CodeGenerator {
     }
 
     private List<ThreeAddressCode> generateIntermediateCode(Node node) throws Exception {
-
+        List<ThreeAddressCode> code = new ArrayList<>();
 
         BASIC_GRAMMAR key = node.getToken().getKey();
         //Alternatively node.getToken().getKey(
@@ -53,26 +53,26 @@ public class CodeGenerator {
         else if (WHILE.equals(key))
             code.addAll(generateWhile(node));
         else if (FOR.equals(key))
-        code.addAll(generateFor(node));
+            code.addAll(generateFor(node));
         else if (STRUCTS.equals(key))
             code.addAll(generateStruct(node));
 
         else if(ARGUMENTS.equals(key))
             code.addAll(generateArguments(node));
-        else
-            System.out.println(String.format("Falta implementar: %s%n", key.getData()));
+        //else
+            //System.out.println("Not implemented yet: " + key);
         return code;
     }
 
     private List<ThreeAddressCode> generateFunction(Node node) throws Exception {
         List<ThreeAddressCode> tac = new ArrayList<>();
-        tac.add(new ThreeAddressCode("function", node.getToken().getValue(), "", ""));
+        tac.add(new ThreeAddressCode("", "", "","function "+node.getToken().getValue()));
         for (Node child : node.getChildren()) {
             if (child.getToken().getKey().getType().equals(TYPES.BASIC_TYPE))
                 continue;
             tac.addAll(generateIntermediateCode(child));
         }
-        tac.add(new ThreeAddressCode("end function", node.getToken().getValue(), "", "")) ;
+        tac.add(new ThreeAddressCode("", "", "","end function "+ node.getToken().getValue())) ;
         return tac;
     }
 
@@ -105,15 +105,16 @@ public class CodeGenerator {
                 String tx = String.format("t%d", i++);
                 tac.add(new ThreeAddressCode("=", value, "", tx));
                 //in here we should consult the table to check the type of the variable
-                tac.add(new ThreeAddressCode("print", tx, "", ""));
+                tac.add(new IOThreeAddressCode("print", tx));
             }
         } else {
             String value = node.getChildren().get(0).getToken().getValue();
             String tx = String.format("t%d", i++);
             tac.add(new ThreeAddressCode("=", value, "", tx));
-            tac.add(new ThreeAddressCode("print", tx, "", ""));
+            tac.add(new IOThreeAddressCode("print", tx));
 
         }
+        tac.add(new IOThreeAddressCode("print", "\"\\n\""));
         return tac;
     }
 
@@ -121,6 +122,8 @@ public class CodeGenerator {
         //is a complex operation
         if(node.getChildren().get(1).getChildren().size()>1)
             return generateComplexOperation(node);
+        if(node.getChildren().get(1).getToken().getKey().equals(READ))
+            return generateRead(node);
         List<ThreeAddressCode> tac = new ArrayList<>();
         String right = node.getChildren().get(1).getToken().getValue();
         String left = node.getChildren().get(0).getToken().getValue();
@@ -142,7 +145,7 @@ public class CodeGenerator {
 
         tac.add(new ThreeAddressCode("=", left, "", tx1));
         tac.add(new ThreeAddressCode("=", right, "", tx2));
-        tac.add(new ThreeAddressCode(operation, tx1, tx2, result));
+        tac.add(new MOThreeAddressCode(operation, tx1, tx2, result));
 
         return tac;
     }
@@ -150,10 +153,13 @@ public class CodeGenerator {
     //TODO: this isn't oke - special case of assignment
     private List<ThreeAddressCode> generateRead(Node node) {
         List<ThreeAddressCode> tac = new ArrayList<>();
+        String tx = String.format("t%d", i++);
+        tac.add(new IOThreeAddressCode("read", tx));
         String readInto = node.getChildren().get(0).getToken().getValue();
-        tac.add(new ThreeAddressCode("read", "", "", readInto));
+        tac.add(new ThreeAddressCode("=", tx, "", readInto));
         return tac;
     }
+
 
     private List<ThreeAddressCode> generateIf(Node node) throws Exception {
         List<ThreeAddressCode> tac = new ArrayList<>();
@@ -163,61 +169,91 @@ public class CodeGenerator {
         tac.addAll(conditions);
 
         int block1 = block++;
-        tac.add(new ThreeAddressCode("if", conditions.get(conditions.size() - 1).getResult(), "goto", "L" + block1));
-
-        //TODO: if contains else
         int block2 = block++;
-        int block3 = block++;//if final
-        tac.add(new ThreeAddressCode("goto", "", "", "L" + block2));
+        int block3 = block++; // if final
 
-        tac.add(new ThreeAddressCode("L" + block1, "", "", ""));
+        // if condition goto L1
+        tac.add(new IfThreeAddressCode("goto", conditions.get(conditions.size() - 1).getResult(), "", "L" + block1));
+        // goto L2
+        if(node.getChildren().size()>2)
+            tac.add(new GoThreeAddressCode("goto", "L" + block2));
+        // L1:
+        tac.add(new LabelThreeAddressCode("L" + block1));
 
-        List<ThreeAddressCode> thenBlock = generateIntermediateCode(node.getChildren().get(1));
+        List<ThreeAddressCode> thenBlock = new ArrayList<>();
+        // Adjusted to handle "if_body" node
+        for(Node child : node.getChildren().get(1).getChildren()){
+            thenBlock.addAll(generateIntermediateCode(child));
+        }
 
         tac.addAll(thenBlock);
 
-        tac.add(new ThreeAddressCode("goto", "", "", "L" + block3));
-        tac.add(new ThreeAddressCode("L" + block2, "", "", ""));
 
-        List<ThreeAddressCode> elseBlock = generateIntermediateCode(node.getChildren().get(2));
-        tac.addAll(elseBlock);
+        // Adjusted to handle "else" node, if it exists
+        if (node.getChildren().size() > 2) {
+            // goto L3 after if block
+            tac.add(new GoThreeAddressCode("goto", "L" + block3));
+            // L2:
+            tac.add(new LabelThreeAddressCode("L" + block2));
+            for(Node child : node.getChildren().get(2).getChildren()){
+                tac.addAll(generateIntermediateCode(child));
+            }
+        }
 
-        tac.add(new ThreeAddressCode("L"+block3, "", "", ""));
+        // L3:
+        tac.add(new LabelThreeAddressCode("L" + block3));
 
         return tac;
     }
-    private String generateWhile(Node node) throws Exception {
+    private  List<ThreeAddressCode> generateWhile(Node node) throws Exception {
         // Inicializa um StringBuilder para construir o código intermediário.
-        StringBuilder code = new StringBuilder();
+        List<ThreeAddressCode> tac = new ArrayList<>();
+
+
         // Adiciona um rótulo de código para o início do loop while.
-        code.append(String.format("L%d:%n", block++));
-        // Gera código intermediário para a condição do while, que é o primeiro filho do nó while.
-        String conditions = generateBooleanExpressions(node.getChildren().get(0));
-        // Prepara a variável block1 para o bloco do corpo do loop.
         int block1 = block++;
+        tac.add(new LabelThreeAddressCode("L" + block1));
+        // Gera código intermediário para a condição do while, que é o primeiro filho do nó while.
+        List<ThreeAddressCode> conditions = generateBooleanExpressions(node.getChildren().get(0));
+        tac.addAll(conditions);
+        // Prepara a variável block1 para o bloco do corpo do loop.
+        int block2 = block++;
+
+
         // Adiciona uma instrução if-goto que vai para o bloco do corpo do loop (block1) se a condição do while for verdadeira.
-        code.append(String.format("if %s goto L%d%n", conditions, block1));
+        tac.add(new IfThreeAddressCode("goto", conditions.get(conditions.size() - 1).getResult(), "", "L" + block2));
+
+
         // Adiciona uma instrução goto que vai para o próximo bloco de código se a condição do while for falsa.
-        code.append(String.format("goto L%d%n", block++));
+        tac.add(new GoThreeAddressCode("goto", "L" + ++block));
+
+
         // Adiciona um rótulo de código para o bloco do corpo do loop, que é o corpo do while.
-        code.append(String.format("L%d:%n", block1));
+        tac.add(new LabelThreeAddressCode("L" + block2));
+
+
         // Gera código intermediário para o corpo do while, que é o segundo filho do nó while.
-        code.append(generateIntermediateCode(node.getChildren().get(1)));
+        List<ThreeAddressCode> body = generateIntermediateCode(node.getChildren().get(1));
+
         // Adiciona uma instrução goto que volta ao início do loop while depois que o corpo do loop foi executado.
-        code.append(String.format("goto L%d%n", block - 2));
+        tac.addAll(body);
         // Retorna o código intermediário gerado como uma String.
-        return code.toString();
+        tac.add(new ThreeAddressCode("goto", "", "", "L" + block1));
+
+        return tac;
     }
 
 
-    private String generateFor(Node node) throws Exception {
-        StringBuilder code = new StringBuilder();
+    private  List<ThreeAddressCode> generateFor(Node node) throws Exception {
+        List<ThreeAddressCode> tac = new ArrayList<>();
+
         // Inicialização
         String varName = getChildValue(node.getChildren().get(0));
         String initValue = getChildValue(node.getChildren().get(1));
 
-        code.append(String.format(attr, i, initValue));
-        code.append(String.format("%s = t%d%n", varName, i++));
+        String tx = String.format("t%d", i++);
+        tac.add(new ThreeAddressCode("=", initValue, "", tx));
+        tac.add(new ThreeAddressCode("=", tx, "", varName));
 
         // Condição
         String endValue = getChildValue(node.getChildren().get(2));
@@ -227,66 +263,76 @@ public class CodeGenerator {
         String booleanOperator = Integer.parseInt(increment) > 0 ? "<" : ">";
 
         int block1 = block++;
-        code.append(String.format("L%d:%n", block1));
-        code.append(String.format("if %s %s %s goto L%d%n", varName, booleanOperator, endValue, block++));
+        tac.add(new LabelThreeAddressCode("L" + block1));
 
+        tx = String.format("t%d", i++);
+        tac.add(new BooleanThreeAddressCode(booleanOperator, varName, endValue, tx));
+        tac.add(new IfThreeAddressCode("goto", tx, "", "L" + ++block));
         // Corpo
-        code.append(generateIntermediateCode(node.getChildren().get(4)));
+        List<ThreeAddressCode> body = generateIntermediateCode(node.getChildren().get(4));
+        tac.addAll(body);
 
         // Incremento
-        code.append(String.format(attr, i, increment));
-        //if the increment is negative it doesn't matter
-        code.append(String.format("%s = %s + t%d%n", varName, varName, i++));
+        tx = String.format("t%d", i++);
+        tac.add(new MOThreeAddressCode("+", varName, increment, tx));
+        tac.add(new ThreeAddressCode("=", tx, "", varName));
 
         // Volta para a condição
-        code.append(String.format("goto L%d%n", block1));
-        code.append(String.format("end for L%d%n", block1));
+        tac.add(new GoThreeAddressCode("goto", "L" + block++));
+        tac.add(new ThreeAddressCode("", "", "","end function for")) ;
 
-        return code.toString();
+        return tac;
     }
 
     private String getChildValue(Node node) {
         return node.getChildren().get(0).getToken().getValue();
     }
 
+    private  List<ThreeAddressCode> generateStruct(Node node) throws Exception {
+        List<ThreeAddressCode> tac = new ArrayList<>();
 
+        tac.add(new ThreeAddressCode("struct", node.getChildren().get(0).getToken().getValue(), "", ""));
 
+        List<ThreeAddressCode> body = generateIntermediateCode(node.getChildren().get(1));
+        tac.addAll(body);
 
+        tac.add(new ThreeAddressCode("end struct", node.getChildren().get(0).getToken().getValue(), "", ""));
 
-
-    private String generateStruct(Node node) throws Exception {
-        StringBuilder code = new StringBuilder();
-        code.append(String.format("struct %s {%n", node.getChildren().get(0).getToken().getValue()));
-        code.append(generateIntermediateCode(node.getChildren().get(1)));
-        code.append(String.format("}%n"));
-        return code.toString();
+        return tac;
     }
-    private String generateArguments(Node node) throws  Exception {
-        StringBuilder code = new StringBuilder();
+    private  List<ThreeAddressCode> generateArguments(Node node) throws  Exception {
+        List<ThreeAddressCode> tac = new ArrayList<>();
         for (Node child : node.getChildren()) {
-            code.append(generateIntermediateCode(child));
+            tac.addAll(generateIntermediateCode(child));
         }
-        return code.toString();
+        return tac;
     }
 
-
-    private String generateBooleanExpressions(Node node) {
-        StringBuilder code = new StringBuilder();
-
+    private List<ThreeAddressCode> generateBooleanExpressions(Node node) {
+        List<ThreeAddressCode> tac = new ArrayList<>();
+        String tempResult = null;
         for (Node child : node.getChildren()) {
-            code.append(generateBooleanExpression(child));
+            List<ThreeAddressCode> booleanExpression = generateBooleanExpression(child);
+            tac.addAll(booleanExpression);
+            if (tempResult == null) {
+                tempResult = booleanExpression.get(booleanExpression.size() - 1).getResult();
+            } else {
+                String newTemp = "t" + i++;
+                tac.add(new BooleanThreeAddressCode("or", tempResult, booleanExpression.get(booleanExpression.size() - 1).getResult(), newTemp));
+                tempResult = newTemp;
+            }
         }
-
-        return code.toString();
+        return tac;
     }
 
-
-    private String generateBooleanExpression(Node node) {
+   private  List<ThreeAddressCode> generateBooleanExpression(Node node) {
+        List<ThreeAddressCode> tac = new ArrayList<>();
         String name = node.getChildren().get(0).getToken().getValue();
         String op = node.getChildren().get(1).getToken().getValue();
         String value = node.getChildren().get(2).getToken().getValue();
 
-        return String.format("%s %s %s", name, op, value);
+        tac.add(new BooleanThreeAddressCode(op, name, value, "t" + i++));
+        return tac;
     }
 
 
