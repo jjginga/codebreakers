@@ -8,7 +8,7 @@ public class SymbolTable {
     // Escopo atual
     public int currentScope;
 
-    // Id e entrada da tabela
+    // Nome identificador do símbolo e entrada da tabela
     private Hashtable<String, EntryTable> table;
 
 
@@ -23,26 +23,7 @@ public class SymbolTable {
     }
 
 
-    public void beginScope() {
-        currentScope++;
-    }
 
-//    public void endScope() {
-//        while (root != null && root.scope == currentScope) {
-//            root = root.next;
-//        }
-//        currentScope--;
-//    }
-
-//    public EntryConst getConstEntry() {
-//        EntryTable current = this.root;
-//        while (current.next != null) {
-//            if(current instanceof EntryConst)
-//                return (EntryConst) current;
-//            current = current.next;
-//        }
-//        return null;
-//    }
     public EntryTable getSymbolTableEntry(String name) {
         SymbolTable current = this;
         while (current.prev != null) {

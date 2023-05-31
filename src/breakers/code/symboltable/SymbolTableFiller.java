@@ -54,7 +54,6 @@ public class SymbolTableFiller {
         if (node == null)
             return;
 
-        checkAndInsertConstEntry(node);
         checkAndInsertVarEntry(node);
 
         // When the scope has ended go back to the previous symbol table #TODO
@@ -123,60 +122,6 @@ public class SymbolTableFiller {
         for (Node child : node.getChildren()) {
             traverseTree(child);
         }
-
-
-//
-//
-//        for (Node child : currentNode.getChildren()) {
-//            if(child.getToken() != null && child.getToken().getKey() != null && child.getToken().getKey().getData() != null) {
-//                System.out.println(child.getToken().getKey().getData());
-//            }
-//        }
-//
-//
-//        // If symbol is scope creator then create a new SymbolTable and point current to it
-//        // Continue while flow to the next node (children)
-//        if(
-//                currentNode.getToken() != null &&
-//                        currentNode.getToken().getKey() != null  &&
-//                        currentNode.getToken().getKey().getData() != null &&
-//                        isSymbolScopeCreator(
-//                                currentNode.getToken().getKey().getData()
-//                        )
-//        ) {
-//            symbolTable = new SymbolTable(symbolTable);
-//            continue;
-//        }
-//
-//
-//        checkAndInsertConstEntry(currentNode);
-//
-//        if(currentNode.getChildren().size() > 0) {
-//            currentNode = currentNode.getChildren().get(0);
-//        } else {
-//            // go to the next branch
-//            currentDirectChildPosition++;
-//            currentNode = syntaxTreeRoot;
-//            currentNode.getChildren().get(currentDirectChildPosition);
-//        }
-    }
-
-    private void checkAndInsertConstEntry(Node node) {
-       if (node.getToken() != null && node.getToken().getKey() != null && node.getToken().getKey().getData().equals("const")) {
-           String name = node.getChildren().get(0).getToken().getValue();
-
-           // If it was already inserted, return because it's a duplicate (already declared)
-           if (validateIfVariableWasAlreadyInserted(name) == true)
-               return;
-
-
-           String type = node.getChildren().get(0).getChildren().get(0).getToken().getValue();
-           String value = node.getChildren().get(0).getChildren().get(1).getToken().getValue();
-
-           EntryConst entryConst = new EntryConst(name, type, value, 0,  symbolTable);
-
-           symbolTable.addTableEntry(entryConst);
-       }
     }
 
     private void checkAndInsertVarEntry(Node node) {
