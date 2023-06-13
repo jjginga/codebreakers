@@ -24,6 +24,8 @@ public class Main {
         CodeGenerator codeGenerator = new CodeGenerator();
 
         Optimizer optimizer = new Optimizer();
+
+        FinalCodeGenerator finalCodeGenerator = new FinalCodeGenerator();
         try {
             System.out.println("*****Parse Tree*****\n");
             Node node = parser.parse();
@@ -33,7 +35,11 @@ public class Main {
             code.forEach(System.out::println);
             System.out.println("\n\n\n*****Optimized Code*****\n");
             optimizer.setTacList(code);
-            optimizer.optimize().forEach(System.out::println);
+            List<ThreeAddressCode> optimized = optimizer.optimize();
+            optimized.forEach(System.out::println);
+            System.out.println("\n\n\n*****Final Code*****\n");
+            String finalCode = finalCodeGenerator.generateFinalCode(optimized);
+            System.out.println("\n\n"+finalCode);
 
 
             /**SymbolTable symbolTable = new SymbolTable(null);
