@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 public enum NEED_FOR_PARSING implements BASIC_GRAMMAR {
 
     BOOLEAN_EXPRESSION("boolean_expression"),
+    IF_BODY_("if_body"),
     STRUCT_NAME("struct_name"),
     FOR_VAR("for_VAR"),
     FOR_INIT("for_init"),

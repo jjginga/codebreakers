@@ -25,6 +25,7 @@ public enum TYPES {
     BOOLEAN,
     PROGRAM,
     BOOL_EXPRESSION,
+    IF_BODY,
     EOF;
 
 }
